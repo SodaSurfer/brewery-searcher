@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.activity
+package com.brewery.searcher.feature.activity.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

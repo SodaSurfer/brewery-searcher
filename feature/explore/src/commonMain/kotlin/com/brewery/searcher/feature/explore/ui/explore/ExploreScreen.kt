@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.explore
+package com.brewery.searcher.feature.explore.ui.explore
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -28,11 +28,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.brewery.searcher.feature.explore.location.rememberLocationProvider
-import com.brewery.searcher.feature.explore.ui.BreweryListBottomSheet
-import com.brewery.searcher.feature.explore.ui.ExploreMapView
-import com.brewery.searcher.feature.explore.ui.LocationPermissionDialog
-import com.brewery.searcher.feature.explore.ui.PermissionDeniedDialog
-import com.brewery.searcher.feature.explore.ui.SelectedBreweryBottomSheet
+import com.brewery.searcher.feature.explore.ui.bottomsheets.BreweryListBottomSheet
+import com.brewery.searcher.feature.explore.ui.dialogs.LocationPermissionDialog
+import com.brewery.searcher.feature.explore.ui.dialogs.PermissionDeniedDialog
+import com.brewery.searcher.feature.explore.ui.bottomsheets.SelectedBreweryBottomSheet
 import dev.icerock.moko.permissions.DeniedAlwaysException
 import dev.icerock.moko.permissions.DeniedException
 import dev.icerock.moko.permissions.Permission

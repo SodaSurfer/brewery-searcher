@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.explore.ui
+package com.brewery.searcher.feature.explore.ui.dialogs
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.home
+package com.brewery.searcher.feature.home.ui.home
 
 import androidx.lifecycle.ViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.home
+package com.brewery.searcher.feature.home.ui.search
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.explore.ui
+package com.brewery.searcher.feature.explore.ui.dialogs
 
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Text

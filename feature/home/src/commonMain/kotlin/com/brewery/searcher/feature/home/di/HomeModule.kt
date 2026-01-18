@@ -1,8 +1,8 @@
 package com.brewery.searcher.feature.home.di
 
-import com.brewery.searcher.feature.home.BreweryDetailViewModel
-import com.brewery.searcher.feature.home.HomeViewModel
-import com.brewery.searcher.feature.home.SearchViewModel
+import com.brewery.searcher.feature.home.ui.brewerydetail.BreweryDetailViewModel
+import com.brewery.searcher.feature.home.ui.home.HomeViewModel
+import com.brewery.searcher.feature.home.ui.search.SearchViewModel
 import org.koin.core.module.dsl.viewModel
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module

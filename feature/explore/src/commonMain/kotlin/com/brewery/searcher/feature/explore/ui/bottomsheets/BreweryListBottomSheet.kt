@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.explore.ui
+package com.brewery.searcher.feature.explore.ui.bottomsheets
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

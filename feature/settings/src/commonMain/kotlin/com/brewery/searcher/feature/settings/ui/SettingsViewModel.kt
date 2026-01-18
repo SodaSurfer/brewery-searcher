@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.settings
+package com.brewery.searcher.feature.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

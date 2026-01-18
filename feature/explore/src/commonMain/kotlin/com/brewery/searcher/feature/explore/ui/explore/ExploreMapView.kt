@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.explore.ui
+package com.brewery.searcher.feature.explore.ui.explore
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier

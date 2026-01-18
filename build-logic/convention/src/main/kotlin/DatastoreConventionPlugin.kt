@@ -13,12 +13,12 @@ class DatastoreConventionPlugin : Plugin<Project> {
             extensions.configure<KotlinMultiplatformExtension> {
                 sourceSets.apply {
                     androidMain.dependencies {
-                        implementation(libs.findLibrary("koin-android").get())
+                        implementation(versionCatalog.findLibrary("koin-android").get())
                     }
                     commonMain.dependencies {
-                        api(libs.findLibrary("datastore-core-okio").get())
-                        api(libs.findLibrary("squareup-wire-runtime").get())
-                        api(libs.findLibrary("koin-core").get())
+                        api(versionCatalog.findLibrary("datastore-core-okio").get())
+                        api(versionCatalog.findLibrary("squareup-wire-runtime").get())
+                        api(versionCatalog.findLibrary("koin-core").get())
                     }
                 }
             }

@@ -13,7 +13,7 @@ class NavigationConventionPlugin : Plugin<Project> {
             extensions.configure<KotlinMultiplatformExtension> {
                 sourceSets.apply {
                     commonMain.dependencies {
-                        api(libs.findLibrary("jetbrains-navigation3-ui").get())
+                        api(versionCatalog.findLibrary("jetbrains-navigation3-ui").get())
                     }
                 }
             }

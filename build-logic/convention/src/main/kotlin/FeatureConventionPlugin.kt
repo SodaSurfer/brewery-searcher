@@ -23,8 +23,8 @@ class FeatureConventionPlugin : Plugin<Project> {
                         implementation(compose.components.resources)
                         implementation(project(":core:common"))
                         implementation(project(":core:navigation"))
-                        implementation(libs.findLibrary("koin-compose-viewmodel").get())
-                        implementation(libs.findLibrary("androidx-lifecycle-viewmodelCompose").get())
+                        implementation(versionCatalog.findLibrary("koin-compose-viewmodel").get())
+                        implementation(versionCatalog.findLibrary("androidx-lifecycle-viewmodelCompose").get())
                     }
                 }
             }

@@ -18,8 +18,8 @@ class CoreConventionPlugin : Plugin<Project> {
                     commonMain.dependencies {
                         implementation(compose.runtime)
                         implementation(compose.foundation)
-                        api(libs.findLibrary("koin-core").get())
-                        api(libs.findLibrary("napier").get())
+                        api(versionCatalog.findLibrary("koin-core").get())
+                        api(versionCatalog.findLibrary("napier").get())
                     }
                 }
             }

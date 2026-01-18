@@ -17,10 +17,10 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             }
 
             extensions.configure<LibraryExtension> {
-                compileSdk = libs.findVersion("android-compileSdk").get().toString().toInt()
+                compileSdk = versionCatalog.findVersion("android-compileSdk").get().toString().toInt()
 
                 defaultConfig {
-                    minSdk = libs.findVersion("android-minSdk").get().toString().toInt()
+                    minSdk = versionCatalog.findVersion("android-minSdk").get().toString().toInt()
                 }
 
                 compileOptions {
@@ -48,12 +48,12 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
 
                 sourceSets.apply {
                     commonMain.dependencies {
-                        implementation(libs.findLibrary("kotlinx-serialization-core").get())
-                        implementation(libs.findLibrary("compose-runtime").get())
+                        implementation(versionCatalog.findLibrary("kotlinx-serialization-core").get())
+                        implementation(versionCatalog.findLibrary("compose-runtime").get())
                     }
 
                     commonTest.dependencies {
-                        implementation(libs.findLibrary("kotlin-test").get())
+                        implementation(versionCatalog.findLibrary("kotlin-test").get())
                     }
                 }
             }

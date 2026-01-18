@@ -1,7 +1,9 @@
 package com.brewery.searcher.di
 
+import com.brewery.searcher.core.data.di.dataModule
 import com.brewery.searcher.core.datastore.di.datastoreModule
 import com.brewery.searcher.core.datastore.di.datastorePlatformModule
+import com.brewery.searcher.core.network.di.networkModule
 import com.brewery.searcher.feature.activity.di.activityModule
 import com.brewery.searcher.feature.explore.di.exploreModule
 import com.brewery.searcher.feature.home.di.homeModule
@@ -27,6 +29,8 @@ val mainModule = module {
 fun appModules(): List<Module> = listOf(
     datastorePlatformModule,
     datastoreModule,
+    networkModule,
+    dataModule,
     mainModule,
     homeModule,
     exploreModule,

@@ -9,7 +9,11 @@ android {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            implementation(projects.core.data)
+            implementation(projects.core.model)
             implementation(libs.compose.material.icons.extended)
+            implementation(libs.paging.common)
+            implementation(libs.paging.compose)
         }
     }
 }

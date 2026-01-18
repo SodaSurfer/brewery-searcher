@@ -20,6 +20,8 @@ koin-compose = "4.0.4"
 datastore = "1.1.7"
 wire = "5.4.0"
 napier = "2.7.1"
+ktor = "3.3.3"
+paging = "3.4.0-rc01"
 
 [libraries]
 # Gradle plugins (for build-logic)
@@ -50,6 +52,13 @@ squareup-wire-runtime = { module = "com.squareup.wire:wire-runtime", version.ref
 compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composeMultiplatform" }
 wire-gradlePlugin = { group = "com.squareup.wire", name = "wire-gradle-plugin", version.ref = "wire" }
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktor" }
+ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
+paging-common = { module = "androidx.paging:paging-common", version.ref = "paging" }
+paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

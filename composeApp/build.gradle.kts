@@ -50,6 +50,8 @@ kotlin {
             implementation(project(":core:navigation"))
             implementation(project(":core:designsystem"))
             implementation(project(":core:datastore"))
+            implementation(project(":core:network"))
+            implementation(project(":core:data"))
             implementation(project(":feature:home"))
             implementation(project(":feature:explore"))
             implementation(project(":feature:activity"))

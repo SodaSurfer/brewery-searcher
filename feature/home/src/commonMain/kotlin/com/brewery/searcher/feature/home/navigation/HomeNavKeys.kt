@@ -8,3 +8,6 @@ data object HomeNavKey : NavKey
 
 @Serializable
 data object SearchNavKey : NavKey
+
+@Serializable
+data class BreweryDetailNavKey(val breweryId: String) : NavKey

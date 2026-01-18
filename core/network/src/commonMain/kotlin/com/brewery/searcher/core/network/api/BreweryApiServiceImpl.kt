@@ -111,4 +111,14 @@ class BreweryApiServiceImpl(
             throw e
         }
     }
+
+    override suspend fun getBreweryById(id: String): BreweryDto {
+        Napier.d(tag = TAG) { "getBreweryById(id=$id)" }
+        return try {
+            httpClient.get("$BASE_URL/$id").bodyOrThrow()
+        } catch (e: Exception) {
+            Napier.e(tag = TAG, throwable = e) { "getBreweryById failed" }
+            throw e
+        }
+    }
 }

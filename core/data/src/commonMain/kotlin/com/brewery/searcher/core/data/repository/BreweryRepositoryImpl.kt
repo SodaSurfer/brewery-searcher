@@ -41,4 +41,9 @@ class BreweryRepositoryImpl(
             .map { it.toDomain() }
             .filter { it.latitude != null && it.longitude != null }
     }
+
+    override suspend fun getBreweryById(id: String): Brewery {
+        Napier.d(tag = TAG) { "getBreweryById(id=$id)" }
+        return apiService.getBreweryById(id).toDomain()
+    }
 }

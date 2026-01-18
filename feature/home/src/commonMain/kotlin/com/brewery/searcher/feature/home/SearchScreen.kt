@@ -1,8 +1,6 @@
 package com.brewery.searcher.feature.home
 
 import androidx.compose.foundation.background
-import com.brewery.searcher.core.designsystem.component.BreweryListItem
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,6 +65,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun SearchScreen(
     onBackClick: () -> Unit,
+    onBreweryClick: (String) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = koinViewModel(),
 ) {
@@ -100,12 +99,13 @@ fun SearchScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(horizontal = 16.dp),
+                    .padding(top = 16.dp),
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
                 SearchBar(
+                    modifier = Modifier.padding(top = innerPadding.calculateTopPadding())
+                        .padding(horizontal = 16.dp),
                     query = searchQuery,
                     searchType = searchType,
                     onQueryChange = viewModel::onQueryChange,
@@ -113,7 +113,7 @@ fun SearchScreen(
                     onSearchSubmit = viewModel::onSearchSubmit,
                 )
 
-                Spacer(modifier = Modifier.height(16.dp))
+                Spacer(modifier = Modifier.height(8.dp))
 
                 SearchResultsContent(
                     searchResults = searchResults,
@@ -122,6 +122,7 @@ fun SearchScreen(
                     onHistoryItemClick = viewModel::onHistoryItemClick,
                     onDeleteHistoryItem = viewModel::onDeleteHistoryItem,
                     onClearHistory = viewModel::onClearHistory,
+                    onBreweryClick = onBreweryClick,
                 )
             }
         }
@@ -162,6 +163,16 @@ private fun SearchBar(
                         imageVector = Icons.Default.Search,
                         contentDescription = null,
                     )
+                },
+                trailingIcon = {
+                    if (query.isNotEmpty()) {
+                        IconButton(onClick = { onQueryChange("") }) {
+                            Icon(
+                                imageVector = Icons.Default.Close,
+                                contentDescription = "Clear search",
+                            )
+                        }
+                    }
                 },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
@@ -214,6 +225,7 @@ private fun SearchResultsContent(
     onHistoryItemClick: (SearchHistory) -> Unit,
     onDeleteHistoryItem: (Long) -> Unit,
     onClearHistory: () -> Unit,
+    onBreweryClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when {
@@ -222,6 +234,7 @@ private fun SearchResultsContent(
                 is SearchHistoryState.Loading -> {
                     LoadingState(modifier = modifier)
                 }
+
                 is SearchHistoryState.Error -> {
                     ErrorState(
                         title = "History error",
@@ -230,6 +243,7 @@ private fun SearchResultsContent(
                         modifier = modifier,
                     )
                 }
+
                 is SearchHistoryState.Success -> {
                     if (searchHistoryState.history.isEmpty()) {
                         EmptySearchState(
@@ -281,6 +295,7 @@ private fun SearchResultsContent(
         else -> {
             BreweryList(
                 searchResults = searchResults,
+                onBreweryClick = onBreweryClick,
                 modifier = modifier,
             )
         }
@@ -303,7 +318,8 @@ private fun SearchHistoryList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 8.dp),
+                    .padding(vertical = 8.dp)
+                    .padding(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
@@ -504,10 +520,12 @@ private fun NoResultsState(
 @Composable
 private fun BreweryList(
     searchResults: LazyPagingItems<Brewery>,
+    onBreweryClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize()
+            .padding(horizontal = 16.dp),
         contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
@@ -517,7 +535,10 @@ private fun BreweryList(
         ) { index ->
             val brewery = searchResults[index]
             if (brewery != null) {
-                BreweryListItem(brewery = brewery)
+                BreweryListItem(
+                    brewery = brewery,
+                    onClick = { onBreweryClick(brewery.id) },
+                )
             }
         }
 

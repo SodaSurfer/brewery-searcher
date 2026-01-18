@@ -14,8 +14,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Storefront
+import androidx.compose.material.icons.filled.SportsBar
+import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.SportsBar
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -26,7 +26,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -51,16 +50,17 @@ fun BreweryListItem(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
         ) {
+            // Icon/Avatar placeholder
             Surface(
+                modifier = Modifier.size(48.dp),
                 shape = CircleShape,
                 color = MaterialTheme.colorScheme.primaryContainer,
-                modifier = Modifier.size(48.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
-                        imageVector = Icons.Default.SportsBar,
+                        imageVector = Icons.Rounded.SportsBar,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.size(24.dp)
@@ -76,7 +76,7 @@ fun BreweryListItem(
                 Text(
                     text = brewery.name,
                     style = MaterialTheme.typography.titleMedium.copy(
-                        fontWeight = FontWeight.SemiBold
+                        fontWeight = FontWeight.Bold
                     ),
                     color = MaterialTheme.colorScheme.onSurface,
                     maxLines = 1,
@@ -105,7 +105,6 @@ fun BreweryListItem(
                         overflow = TextOverflow.Ellipsis
                     )
                 }
-            }
 
                 Spacer(modifier = Modifier.height(4.dp))
 

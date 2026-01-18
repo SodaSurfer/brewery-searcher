@@ -2,12 +2,12 @@ package com.brewery.searcher.navigation
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Map
 import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Map
 import androidx.compose.material.icons.outlined.Notifications
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.brewery.searcher.core.navigation.NavKey
@@ -29,8 +29,8 @@ val TOP_LEVEL_NAV_ITEMS: Map<NavKey, TopLevelNavItem> = linkedMapOf(
         label = "Home",
     ),
     ExploreNavKey to TopLevelNavItem(
-        selectedIcon = Icons.Filled.Search,
-        unselectedIcon = Icons.Outlined.Search,
+        selectedIcon = Icons.Filled.Map,
+        unselectedIcon = Icons.Outlined.Map,
         label = "Explore",
     ),
     ActivityNavKey to TopLevelNavItem(

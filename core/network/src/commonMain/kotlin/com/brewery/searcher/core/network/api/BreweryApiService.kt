@@ -7,4 +7,5 @@ interface BreweryApiService {
     suspend fun getBreweriesByCity(city: String, page: Int, perPage: Int = 50): List<BreweryDto>
     suspend fun getBreweriesByCountry(country: String, page: Int, perPage: Int = 50): List<BreweryDto>
     suspend fun getBreweriesByState(state: String, page: Int, perPage: Int = 50): List<BreweryDto>
+    suspend fun getBreweriesByDistance(latitude: Double, longitude: Double, perPage: Int = 50): List<BreweryDto>
 }

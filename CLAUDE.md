@@ -145,9 +145,9 @@ Each module has platform source sets:
    ```
 3. Include in `settings.gradle.kts`: `include(":feature:{name}")`
 4. Create source sets following existing patterns:
-    - `{Name}Screen.kt`, `{Name}ViewModel.kt`
-    - `navigation/{Name}NavKey.kt`, `navigation/{Name}EntryProvider.kt`
-    - `di/{Name}Module.kt`
+   - `{Name}Screen.kt`, `{Name}ViewModel.kt`
+   - `navigation/{Name}NavKey.kt`, `navigation/{Name}EntryProvider.kt`
+   - `di/{Name}Module.kt`
 5. Register DI module in `composeApp/src/commonMain/kotlin/di/AppModule.kt`
 6. Add entry provider to `App.kt` NavDisplay
 
@@ -184,11 +184,11 @@ When planning a new feature or significant change, create an implementation docu
 1. **Scope** - What's in/out of scope (e.g., Android only vs cross-platform)
 2. **Overview** - Brief description of the feature and key capabilities
 3. **Implementation Phases** - Break down into discrete phases, each with:
-    - Goal statement
-    - Files to create/modify (table format)
-    - Dependencies to add (if any)
-    - Key patterns/code snippets
-    - End state (verification criteria)
+   - Goal statement
+   - Files to create/modify (table format)
+   - Dependencies to add (if any)
+   - Key patterns/code snippets
+   - End state (verification criteria)
 4. **Verification Checklist** - Testable acceptance criteria
 5. **Architecture Diagram** - ASCII diagram showing component relationships
 6. **Dependencies Summary** - All new dependencies in one place

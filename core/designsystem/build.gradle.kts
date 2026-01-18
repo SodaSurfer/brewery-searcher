@@ -9,9 +9,8 @@ android {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(project(":core:model"))
-
             implementation(compose.material3)
+            implementation(projects.core.model)
             implementation(libs.compose.material.icons.extended)
         }
     }

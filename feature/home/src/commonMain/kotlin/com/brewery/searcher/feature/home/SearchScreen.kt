@@ -1,6 +1,8 @@
 package com.brewery.searcher.feature.home
 
 import androidx.compose.foundation.background
+import com.brewery.searcher.core.designsystem.component.BreweryListItem
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box

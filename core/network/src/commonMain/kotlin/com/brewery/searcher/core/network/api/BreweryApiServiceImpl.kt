@@ -94,4 +94,21 @@ class BreweryApiServiceImpl(
             throw e
         }
     }
+
+    override suspend fun getBreweriesByDistance(
+        latitude: Double,
+        longitude: Double,
+        perPage: Int
+    ): List<BreweryDto> {
+        Napier.d(tag = TAG) { "getBreweriesByDistance(lat=$latitude, lng=$longitude, perPage=$perPage)" }
+        return try {
+            httpClient.get(BASE_URL) {
+                parameter("by_dist", "$latitude,$longitude")
+                parameter("per_page", perPage)
+            }.bodyOrThrow()
+        } catch (e: Exception) {
+            Napier.e(tag = TAG, throwable = e) { "getBreweriesByDistance failed" }
+            throw e
+        }
+    }
 }

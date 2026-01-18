@@ -33,10 +33,11 @@ class BreweryRepositoryImpl(
 
     override suspend fun getBreweriesByDistance(
         latitude: Double,
-        longitude: Double
+        longitude: Double,
+        perPage: Int
     ): List<Brewery> {
-        Napier.d(tag = TAG) { "getBreweriesByDistance(lat=$latitude, lng=$longitude)" }
-        return apiService.getBreweriesByDistance(latitude, longitude)
+        Napier.d(tag = TAG) { "getBreweriesByDistance(lat=$latitude, lng=$longitude, perPage=$perPage)" }
+        return apiService.getBreweriesByDistance(latitude, longitude, perPage)
             .map { it.toDomain() }
             .filter { it.latitude != null && it.longitude != null }
     }

@@ -12,7 +12,7 @@ import com.brewery.searcher.core.model.Brewery
 actual fun ExploreMapView(
     breweries: List<Brewery>,
     selectedBreweryId: String?,
-    onCameraMoved: (latitude: Double, longitude: Double) -> Unit,
+    onCameraMoved: (latitude: Double, longitude: Double, zoom: Float) -> Unit,
     onBrewerySelected: (Brewery) -> Unit,
     modifier: Modifier,
 ) {

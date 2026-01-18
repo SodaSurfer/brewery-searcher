@@ -23,7 +23,7 @@ private const val CAMERA_DEBOUNCE_MS = 500L
 actual fun ExploreMapView(
     breweries: List<Brewery>,
     selectedBreweryId: String?,
-    onCameraMoved: (latitude: Double, longitude: Double) -> Unit,
+    onCameraMoved: (latitude: Double, longitude: Double, zoom: Float) -> Unit,
     onBrewerySelected: (Brewery) -> Unit,
     modifier: Modifier,
 ) {
@@ -34,11 +34,11 @@ actual fun ExploreMapView(
 
     // Debounce camera movements in the UI layer (500ms)
     LaunchedEffect(cameraPositionState) {
-        snapshotFlow { cameraPositionState.position.target }
+        snapshotFlow { cameraPositionState.position }
             .debounce(CAMERA_DEBOUNCE_MS)
             .distinctUntilChanged()
-            .collect { latLng ->
-                onCameraMoved(latLng.latitude, latLng.longitude)
+            .collect { position ->
+                onCameraMoved(position.target.latitude, position.target.longitude, position.zoom)
             }
     }
 

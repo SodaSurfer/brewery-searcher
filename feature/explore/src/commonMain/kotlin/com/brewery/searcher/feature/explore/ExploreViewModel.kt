@@ -26,19 +26,28 @@ class ExploreViewModel(
 
     companion object {
         val TAG = ExploreViewModel::class.simpleName
+
+        fun calculatePerPage(zoom: Float): Int = when {
+            zoom >= 16f -> 10
+            zoom >= 13f -> 20
+            zoom >= 10f -> 30
+            zoom >= 7f -> 40
+            else -> 50
+        }
     }
 
     private val _uiState = MutableStateFlow(ExploreUiState())
     val uiState: StateFlow<ExploreUiState> = _uiState.asStateFlow()
 
-    fun onCameraMoved(latitude: Double, longitude: Double) {
+    fun onCameraMoved(latitude: Double, longitude: Double, zoom: Float) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
+            val perPage = calculatePerPage(zoom)
             try {
-                val breweries = breweryRepository.getBreweriesByDistance(latitude, longitude)
+                val breweries = breweryRepository.getBreweriesByDistance(latitude, longitude, perPage)
                 _uiState.update { it.copy(breweries = breweries, isLoading = false) }
-                Napier.d(tag = TAG) { "Loaded ${breweries.size} breweries near ($latitude, $longitude)" }
+                Napier.d(tag = TAG) { "Loaded ${breweries.size} breweries (perPage=$perPage, zoom=$zoom)" }
             } catch (e: ApiException) {
                 Napier.e(tag = TAG, throwable = e) { "API error fetching breweries" }
                 _uiState.update { it.copy(error = e.userMessage, isLoading = false) }

@@ -7,5 +7,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface BreweryRepository {
     fun searchBreweries(query: String, searchType: SearchType): Flow<PagingData<Brewery>>
-    suspend fun getBreweriesByDistance(latitude: Double, longitude: Double): List<Brewery>
+    suspend fun getBreweriesByDistance(latitude: Double, longitude: Double, perPage: Int = 50): List<Brewery>
 }

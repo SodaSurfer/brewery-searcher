@@ -9,6 +9,8 @@ android {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            implementation(project(":core:designsystem"))
+            implementation("org.jetbrains.compose.ui:ui-tooling-preview:1.10.0")
             implementation(projects.core.data)
             implementation(projects.core.model)
             implementation(projects.core.network)

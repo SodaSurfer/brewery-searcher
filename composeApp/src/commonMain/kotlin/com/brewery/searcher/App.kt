@@ -28,9 +28,7 @@ import com.brewery.searcher.core.navigation.NavKey
 import com.brewery.searcher.core.navigation.Navigator
 import com.brewery.searcher.feature.activity.navigation.activityEntry
 import com.brewery.searcher.feature.explore.navigation.exploreEntry
-import com.brewery.searcher.feature.home.navigation.SearchNavKey
 import com.brewery.searcher.feature.home.navigation.homeEntry
-import com.brewery.searcher.feature.home.navigation.searchEntry
 import com.brewery.searcher.feature.settings.navigation.settingsEntry
 import com.brewery.searcher.navigation.TOP_LEVEL_NAV_ITEMS
 import com.brewery.searcher.ui.AppState
@@ -74,8 +72,7 @@ private fun AppContent(
             },
         ) { paddingValues ->
             val entryProvider = entryProvider {
-                homeEntry(onNavigate = { navigator.navigate(it) })
-                searchEntry()
+                homeEntry(navigator)
                 exploreEntry()
                 activityEntry()
                 settingsEntry()

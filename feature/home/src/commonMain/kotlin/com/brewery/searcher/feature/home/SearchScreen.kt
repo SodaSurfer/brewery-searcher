@@ -1,5 +1,6 @@
 package com.brewery.searcher.feature.home
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,19 +11,23 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -33,14 +38,17 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.brewery.searcher.core.designsystem.component.BreweryListItem
+import com.brewery.searcher.core.designsystem.component.BreweryTopBar
 import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.core.model.SearchType
 import com.brewery.searcher.core.network.api.ApiException
 import org.koin.compose.viewmodel.koinViewModel
+import androidx.compose.ui.tooling.preview.Preview
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SearchScreen(
+    onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: SearchViewModel = koinViewModel(),
 ) {
@@ -49,32 +57,50 @@ fun SearchScreen(
     val showBottomSheet by viewModel.showBottomSheet.collectAsState()
     val searchResults = viewModel.searchResults.collectAsLazyPagingItems()
 
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp),
-    ) {
-        SearchBar(
-            query = searchQuery,
-            searchType = searchType,
-            onQueryChange = viewModel::onQueryChange,
-            onFilterClick = viewModel::onShowBottomSheet,
-        )
+    Scaffold(
+        topBar = {
+            BreweryTopBar(
+                title = "Search Breweries",
+                onBackClick = onBackClick
+            )
+        },
+        modifier = modifier.fillMaxSize()
+    ) { innerPadding ->
+        Box(
+            modifier = modifier.fillMaxSize().imePadding(),
+            contentAlignment = Alignment.TopStart
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding)
+                    .padding(horizontal = 16.dp),
+            ) {
+                Spacer(modifier = Modifier.height(8.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
+                SearchBar(
+                    query = searchQuery,
+                    searchType = searchType,
+                    onQueryChange = viewModel::onQueryChange,
+                    onFilterClick = viewModel::onShowBottomSheet,
+                )
 
-        SearchResultsContent(
-            searchResults = searchResults,
-            searchQuery = searchQuery,
-        )
-    }
+                Spacer(modifier = Modifier.height(16.dp))
 
-    if (showBottomSheet) {
-        SearchTypeBottomSheet(
-            currentType = searchType,
-            onTypeSelected = viewModel::onSearchTypeSelected,
-            onDismiss = viewModel::onDismissBottomSheet,
-        )
+                SearchResultsContent(
+                    searchResults = searchResults,
+                    searchQuery = searchQuery,
+                )
+            }
+        }
+
+        if (showBottomSheet) {
+            SearchTypeBottomSheet(
+                currentType = searchType,
+                onTypeSelected = viewModel::onSearchTypeSelected,
+                onDismiss = viewModel::onDismissBottomSheet,
+            )
+        }
     }
 }
 
@@ -86,41 +112,56 @@ private fun SearchBar(
     onFilterClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChange,
-            modifier = Modifier.weight(1f),
-            placeholder = { Text("Search breweries...") },
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = null,
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                modifier = Modifier.weight(1f),
+                placeholder = { Text("Search for breweries...") },
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = null,
+                    )
+                },
+                singleLine = true,
+                shape = RoundedCornerShape(12.dp),
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                 )
-            },
-            singleLine = true,
-        )
-
-        Spacer(modifier = Modifier.width(8.dp))
-
-        IconButton(onClick = onFilterClick) {
-            Icon(
-                imageVector = Icons.Default.FilterList,
-                contentDescription = "Filter",
             )
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            IconButton(
+                onClick = onFilterClick,
+                modifier = Modifier
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.FilterList,
+                    contentDescription = "Filter",
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(
+            text = "Searching by: ${searchType.displayName}",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary,
+        )
     }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
-        text = "Search by: ${searchType.displayName}",
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-    )
 }
 
 @Composable
@@ -132,14 +173,14 @@ private fun SearchResultsContent(
     when {
         searchQuery.isBlank() -> {
             EmptySearchState(
-                message = "Enter a search query to find breweries",
+                message = "Start typing to find breweries",
                 modifier = modifier,
             )
         }
 
         searchQuery.trim().length < 3 -> {
             EmptySearchState(
-                message = "Enter at least 3 characters to search",
+                message = "Enter at least 3 characters",
                 modifier = modifier,
             )
         }
@@ -262,8 +303,8 @@ private fun BreweryList(
 ) {
     LazyColumn(
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        contentPadding = PaddingValues(bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         items(
             count = searchResults.itemCount,
@@ -271,7 +312,7 @@ private fun BreweryList(
         ) { index ->
             val brewery = searchResults[index]
             if (brewery != null) {
-                BreweryItem(brewery = brewery)
+                BreweryListItem(brewery = brewery)
             }
         }
 
@@ -304,4 +345,29 @@ private fun BreweryList(
         }
     }
 }
+
+@Preview
+@Composable
+fun PreviewSearchBar() {
+    MaterialTheme {
+        SearchBar(
+            query = "Brew",
+            searchType = SearchType.BY_CITY,
+            onQueryChange = {},
+            onFilterClick = {},
+            modifier = Modifier.padding(16.dp)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun PreviewEmptyState() {
+    MaterialTheme {
+        Surface {
+            EmptySearchState("Start typing...")
+        }
+    }
+}
+
 

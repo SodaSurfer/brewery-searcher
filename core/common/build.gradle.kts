@@ -8,3 +8,12 @@ android {
         buildConfig = true
     }
 }
+
+kotlin {
+    sourceSets {
+        androidMain.dependencies {
+            implementation(libs.navigationevent)
+            implementation(libs.navigationevent.compose)
+        }
+    }
+}

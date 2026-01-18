@@ -45,6 +45,7 @@ import com.brewery.searcher.core.model.SearchType
 import com.brewery.searcher.core.network.api.ApiException
 import org.koin.compose.viewmodel.koinViewModel
 import androidx.compose.ui.tooling.preview.Preview
+import com.brewery.searcher.core.common.BackHandler
 
 @Composable
 fun SearchScreen(
@@ -57,11 +58,19 @@ fun SearchScreen(
     val showBottomSheet by viewModel.showBottomSheet.collectAsState()
     val searchResults = viewModel.searchResults.collectAsLazyPagingItems()
 
+    BackHandler {
+        onBackClick()
+        viewModel.onQueryChange("")
+    }
+
     Scaffold(
         topBar = {
             BreweryTopBar(
                 title = "Search Breweries",
-                onBackClick = onBackClick
+                onBackClick = {
+                    onBackClick()
+                    viewModel.onQueryChange("")
+                }
             )
         },
         modifier = modifier.fillMaxSize()

@@ -18,10 +18,12 @@ icons-extended = "1.7.3"
 koin = "4.0.4"
 koin-compose = "4.0.4"
 datastore = "1.1.7"
+uiToolingPreview = "1.10.0"
 wire = "5.4.0"
 napier = "2.7.1"
 ktor = "3.3.3"
 paging = "3.4.0-rc01"
+navigationevent = "1.0.1"
 
 [libraries]
 # Gradle plugins (for build-logic)
@@ -50,6 +52,7 @@ koin-android = { module = "io.insert-koin:koin-android", version.ref = "koin" }
 datastore-core-okio = { module = "androidx.datastore:datastore-core-okio", version.ref = "datastore" }
 squareup-wire-runtime = { module = "com.squareup.wire:wire-runtime", version.ref = "wire" }
 compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "composeMultiplatform" }
+ui-tooling-preview = { module = "org.jetbrains.compose.ui:ui-tooling-preview", version.ref = "uiToolingPreview" }
 wire-gradlePlugin = { group = "com.squareup.wire", name = "wire-gradle-plugin", version.ref = "wire" }
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
@@ -59,6 +62,8 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 paging-common = { module = "androidx.paging:paging-common", version.ref = "paging" }
 paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
+navigationevent = { module = "androidx.navigationevent:navigationevent", version.ref = "navigationevent" }
+navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

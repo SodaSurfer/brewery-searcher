@@ -1,35 +1,116 @@
-This is a Kotlin Multiplatform project targeting Android, iOS.
+# Brewery Explorer – Take Home Task
 
-* [/composeApp](./composeApp/src) is for code that will be shared across your Compose Multiplatform applications.
-  It contains several subfolders:
-  - [commonMain](./composeApp/src/commonMain/kotlin) is for code that’s common for all targets.
-  - Other folders are for Kotlin code that will be compiled for only the platform indicated in the folder name.
-    For example, if you want to use Apple’s CoreCrypto for the iOS part of your Kotlin app,
-    the [iosMain](./composeApp/src/iosMain/kotlin) folder would be the right place for such calls.
-    Similarly, if you want to edit the Desktop (JVM) specific part, the [jvmMain](./composeApp/src/jvmMain/kotlin)
-    folder is the appropriate location.
+## Features
 
-* [/iosApp](./iosApp/iosApp) contains iOS applications. Even if you’re sharing your UI with Compose Multiplatform,
-  you need this entry point for your iOS app. This is also where you should add SwiftUI code for your project.
+### 1. Browse & Search Breweries
+- Users can browse a paginated list of breweries.
+- Search is available including search history.
+- Supported search parameters:
+    - All Fields
+    - Country
+    - State
+    - City
+- implemented using pagination 3.
+- Error handling: displaying errors gracefully to the user. can be improved by constantly monitoring the internet connection.
 
-### Build and Run Android Application
-
-To build and run the development version of the Android app, use the run configuration from the run widget
-in your IDE’s toolbar or build it directly from the terminal:
-- on macOS/Linux
-  ```shell
-  ./gradlew :composeApp:assembleDebug
-  ```
-- on Windows
-  ```shell
-  .\gradlew.bat :composeApp:assembleDebug
-  ```
-
-### Build and Run iOS Application
-
-To build and run the development version of the iOS app, use the run configuration from the run widget
-in your IDE’s toolbar or open the [/iosApp](./iosApp) directory in Xcode and run it from there.
+**Extra feature**
+- Implemented a **search history** feature.
+- Search queries are saved only when the user presses the **“Done”** button on the keyboard.
+- Search history is persisted locally using Room db.
 
 ---
 
-Learn more about [Kotlin Multiplatform](https://www.jetbrains.com/help/kotlin-multiplatform-dev/get-started.html)…
+### 2. Map Experience
+- Users can enter the Explore screen and choose whether to grant location permissions.
+- If permission is granted, the map searches for breweries near the user’s current location, otherwise fallback to the US.
+- Map interactions:
+    - Selecting a brewery marker displays its details in a bottom sheet.
+    - Selecting a brewery from the list highlights its marker on the map.
+- Breweries with missing or invalid coordinates are handled gracefully and are not shown as map markers.
+
+---
+
+### 3. Favorites
+- Users can mark breweries as favorites.
+- Favorite breweries are persisted locally using **Room**.
+
+---
+
+## Technical Decisions & Architecture
+
+- **Architecture**
+    - MVVM + Clean Architecture with a modular design.
+    - Clear separation between UI, domain, and data layers.
+
+- **Kotlin Multiplatform (KMP)**
+    - The project is structured to support a future iOS implementation.
+    - Only Kotlin-based libraries were used (e.g., Koin for DI, Ktor for networking).
+
+- **Dependency Injection**
+    - Implemented using **Koin**, compatible with KMP.
+
+- **Reactive ViewModels**
+    - ViewModels follow a reactive approach.
+    - Data is fetched only in response to user actions (not eagerly in `init` blocks).
+
+- **Parallel Development**
+    - Two Git worktrees were created during development.
+    - This allowed working with two AI agents in parallel on separate features without interference.
+
+---
+
+## Permissions & Persistence
+
+- **Location Permissions**
+    - Managed using the `moko-permissions` library.
+    - Used to align the map to the user’s location on first entry.
+
+  **Known UX issue**
+    - The map currently re-centers on the user’s location every time the screen is opened.
+    - With more time, this would be improved by saving the last viewed map coordinates and restoring them on subsequent visits.
+
+- **DataStore**
+    - Used for:
+        - Theme selection
+        - “Ignore location permission dialog” flag
+
+---
+
+## Navigation & UI
+
+- Built entirely with **Jetpack Compose**.
+- Uses **Navigation Compose (Navigation 3)**.
+- Due to time constraints:
+    - No Compose `@Preview`s were added.
+    - No automated tests were implemented.
+
+---
+
+## Configuration
+
+- The Google Maps API key is stored in `local.properties`.
+- It was intentionally committed to the repository **only for evaluation convenience**, so the project can run immediately.
+
+---
+
+## Possible Improvements With More Time
+
+- Add unit tests and UI tests.
+- Add Compose previews for easier UI iteration.
+- Improve map UX by restoring last viewed coordinates.
+- Implement `RemoteMediator` for better paging cache support.
+- Enhance offline support beyond favorites.
+- Improve search suggestions and filtering options.
+
+---
+
+## Time Constraints
+
+- This solution was implemented within the intended time frame for the task.
+- Some trade-offs (testing, previews, extended caching) were consciously made to prioritize core functionality and architecture.
+
+---
+
+## THANK YOU!
+
+---

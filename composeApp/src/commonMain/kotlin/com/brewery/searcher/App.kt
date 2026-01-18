@@ -26,7 +26,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.brewery.searcher.core.designsystem.theme.BrewerySearcherTheme
 import com.brewery.searcher.core.navigation.NavKey
 import com.brewery.searcher.core.navigation.Navigator
-import com.brewery.searcher.feature.activity.navigation.activityEntry
+import com.brewery.searcher.feature.activity.navigation.favoritesEntry
 import com.brewery.searcher.feature.explore.navigation.exploreEntry
 import com.brewery.searcher.feature.home.navigation.homeEntry
 import com.brewery.searcher.feature.settings.navigation.settingsEntry
@@ -74,7 +74,7 @@ private fun AppContent(
             val entryProvider = entryProvider {
                 homeEntry(navigator)
                 exploreEntry()
-                activityEntry(navigator)
+                favoritesEntry(navigator)
                 settingsEntry()
             }
 

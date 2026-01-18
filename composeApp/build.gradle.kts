@@ -62,7 +62,7 @@ kotlin {
             implementation(project(":core:data"))
             implementation(project(":feature:home"))
             implementation(project(":feature:explore"))
-            implementation(project(":feature:activity"))
+            implementation(project(":feature:favorites"))
             implementation(project(":feature:settings"))
         }
         androidMain.dependencies {

@@ -17,12 +17,12 @@ sealed interface ActivityUiState {
     data class Error(val message: String) : ActivityUiState
 }
 
-class ActivityViewModel(
+class FavoritesViewModel(
     favoriteBreweryRepository: FavoriteBreweryRepository,
 ) : ViewModel() {
 
     companion object {
-        val TAG = ActivityViewModel::class.simpleName
+        val TAG = FavoritesViewModel::class.simpleName
     }
 
     val uiState: StateFlow<ActivityUiState> = favoriteBreweryRepository.getAllFavorites()

@@ -31,10 +31,10 @@ import com.brewery.searcher.core.model.Brewery
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun ActivityScreen(
+fun FavoritesScreen(
     onBreweryClick: (String) -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: ActivityViewModel = koinViewModel(),
+    viewModel: FavoritesViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
 

@@ -4,4 +4,4 @@ import com.brewery.searcher.core.navigation.NavKey
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object ActivityNavKey : NavKey
+data object FavoritesNavKey : NavKey

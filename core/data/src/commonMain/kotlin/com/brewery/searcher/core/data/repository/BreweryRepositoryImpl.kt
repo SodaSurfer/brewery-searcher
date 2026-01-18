@@ -3,6 +3,7 @@ package com.brewery.searcher.core.data.repository
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import com.brewery.searcher.core.data.mapper.toDomain
 import com.brewery.searcher.core.data.paging.SearchBreweryPagingSource
 import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.core.model.SearchType
@@ -28,5 +29,15 @@ class BreweryRepositoryImpl(
             ),
             pagingSourceFactory = { SearchBreweryPagingSource(apiService, query, searchType) }
         ).flow
+    }
+
+    override suspend fun getBreweriesByDistance(
+        latitude: Double,
+        longitude: Double
+    ): List<Brewery> {
+        Napier.d(tag = TAG) { "getBreweriesByDistance(lat=$latitude, lng=$longitude)" }
+        return apiService.getBreweriesByDistance(latitude, longitude)
+            .map { it.toDomain() }
+            .filter { it.latitude != null && it.longitude != null }
     }
 }

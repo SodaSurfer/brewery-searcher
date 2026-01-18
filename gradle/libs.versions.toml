@@ -22,6 +22,8 @@ wire = "5.4.0"
 napier = "2.7.1"
 ktor = "3.3.3"
 paging = "3.4.0-rc01"
+maps-compose = "6.4.1"
+play-services-maps = "19.0.0"
 
 [libraries]
 # Gradle plugins (for build-logic)
@@ -59,6 +61,8 @@ ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "kto
 ktor-client-darwin = { module = "io.ktor:ktor-client-darwin", version.ref = "ktor" }
 paging-common = { module = "androidx.paging:paging-common", version.ref = "paging" }
 paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
+maps-compose = { module = "com.google.maps.android:maps-compose", version.ref = "maps-compose" }
+play-services-maps = { module = "com.google.android.gms:play-services-maps", version.ref = "play-services-maps" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

@@ -18,6 +18,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.Phone
@@ -27,12 +29,12 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -42,20 +44,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.brewery.searcher.core.designsystem.component.BreweryTopBar
 import com.brewery.searcher.core.model.Brewery
-import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
 fun BreweryDetailScreen(
-    breweryId: String,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: BreweryDetailViewModel = koinViewModel(),
+    viewModel: BreweryDetailViewModel,
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    LaunchedEffect(breweryId) {
-        viewModel.loadBrewery(breweryId)
-    }
+    val isFavorite by viewModel.isFavorite.collectAsState()
 
     Scaffold(
         topBar = {
@@ -83,6 +80,8 @@ fun BreweryDetailScreen(
             is BreweryDetailUiState.Success -> {
                 BreweryDetailContent(
                     brewery = state.brewery,
+                    isFavorite = isFavorite,
+                    onFavoriteClick = viewModel::toggleFavorite,
                     modifier = Modifier.padding(innerPadding),
                 )
             }
@@ -138,6 +137,8 @@ private fun ErrorContent(
 @Composable
 private fun BreweryDetailContent(
     brewery: Brewery,
+    isFavorite: Boolean,
+    onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -148,7 +149,11 @@ private fun BreweryDetailContent(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         // Header with icon and type
-        HeaderSection(brewery = brewery)
+        HeaderSection(
+            brewery = brewery,
+            isFavorite = isFavorite,
+            onFavoriteClick = onFavoriteClick,
+        )
 
         // Address section
         val hasAddress = listOf(
@@ -196,6 +201,8 @@ private fun BreweryDetailContent(
 @Composable
 private fun HeaderSection(
     brewery: Brewery,
+    isFavorite: Boolean,
+    onFavoriteClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Row(
@@ -240,6 +247,14 @@ private fun HeaderSection(
                         shape = RoundedCornerShape(4.dp)
                     )
                     .padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+        }
+
+        IconButton(onClick = onFavoriteClick) {
+            Icon(
+                imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                contentDescription = if (isFavorite) "Remove from favorites" else "Add to favorites",
+                tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

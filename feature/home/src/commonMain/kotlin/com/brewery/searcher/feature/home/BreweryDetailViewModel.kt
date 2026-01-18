@@ -3,12 +3,15 @@ package com.brewery.searcher.feature.home
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brewery.searcher.core.data.repository.BreweryRepository
+import com.brewery.searcher.core.data.repository.FavoriteBreweryRepository
 import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.core.network.api.ApiException
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 sealed interface BreweryDetailUiState {
@@ -18,7 +21,9 @@ sealed interface BreweryDetailUiState {
 }
 
 class BreweryDetailViewModel(
+    private val breweryId: String,
     private val breweryRepository: BreweryRepository,
+    private val favoriteBreweryRepository: FavoriteBreweryRepository,
 ) : ViewModel() {
 
     companion object {
@@ -28,34 +33,52 @@ class BreweryDetailViewModel(
     private val _uiState = MutableStateFlow<BreweryDetailUiState>(BreweryDetailUiState.Loading)
     val uiState: StateFlow<BreweryDetailUiState> = _uiState.asStateFlow()
 
-    private var loadedBreweryId: String? = null
+    val isFavorite: StateFlow<Boolean> = favoriteBreweryRepository
+        .isFavorite(breweryId)
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
 
-    fun loadBrewery(breweryId: String) {
-        if (loadedBreweryId == breweryId && _uiState.value is BreweryDetailUiState.Success) {
-            Napier.d(tag = TAG) { "Brewery $breweryId already loaded, skipping" }
-            return
-        }
+    init {
+        Napier.d(tag = TAG) { "Initializing BreweryDetailViewModel(breweryId=$breweryId)" }
+        loadBrewery()
+    }
 
-        Napier.d(tag = TAG) { "loadBrewery(breweryId=$breweryId)" }
-        loadedBreweryId = breweryId
-        _uiState.value = BreweryDetailUiState.Loading
-
+    private fun loadBrewery() {
         viewModelScope.launch {
+            _uiState.value = BreweryDetailUiState.Loading
+            Napier.d(tag = TAG) { "loadBrewery: Fetching brewery with id=$breweryId" }
             try {
                 val brewery = breweryRepository.getBreweryById(breweryId)
-                Napier.d(tag = TAG) { "Brewery loaded: ${brewery.name}" }
+                Napier.d(tag = TAG) { "loadBrewery: Found brewery '${brewery.name}'" }
                 _uiState.value = BreweryDetailUiState.Success(brewery)
             } catch (e: ApiException) {
-                Napier.e(tag = TAG, throwable = e) { "Failed to load brewery" }
+                Napier.e(tag = TAG, throwable = e) { "loadBrewery: Failed to load brewery" }
                 _uiState.value = BreweryDetailUiState.Error(e.userMessage)
             } catch (e: Exception) {
-                Napier.e(tag = TAG, throwable = e) { "Failed to load brewery" }
+                Napier.e(tag = TAG, throwable = e) { "loadBrewery: Failed to load brewery" }
                 _uiState.value = BreweryDetailUiState.Error("Failed to load brewery details")
             }
         }
     }
 
+    fun toggleFavorite() {
+        val currentState = _uiState.value
+        if (currentState !is BreweryDetailUiState.Success) return
+
+        viewModelScope.launch {
+            try {
+                favoriteBreweryRepository.toggleFavorite(currentState.brewery)
+            } catch (e: Exception) {
+                Napier.e(tag = TAG, throwable = e) { "Failed to toggle favorite" }
+            }
+        }
+    }
+
     fun retry() {
-        loadedBreweryId?.let { loadBrewery(it) }
+        Napier.d(tag = TAG) { "retry()" }
+        loadBrewery()
     }
 }

@@ -74,7 +74,7 @@ private fun AppContent(
             val entryProvider = entryProvider {
                 homeEntry(navigator)
                 exploreEntry()
-                activityEntry()
+                activityEntry(navigator)
                 settingsEntry()
             }
 

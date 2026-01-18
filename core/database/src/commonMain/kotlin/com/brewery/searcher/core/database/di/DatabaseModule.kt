@@ -13,4 +13,5 @@ val databaseModule = module {
             .build()
     }
     single { get<BrewerySearcherDatabase>().searchHistoryDao() }
+    single { get<BrewerySearcherDatabase>().favoriteBreweryDao() }
 }

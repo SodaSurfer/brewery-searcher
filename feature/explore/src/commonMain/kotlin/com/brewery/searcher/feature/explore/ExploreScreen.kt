@@ -63,12 +63,26 @@ fun ExploreScreen(
     // Location provider for getting actual location
     val locationProvider = rememberLocationProvider()
 
+    // Check permission on screen entry and get location if already granted
+    LaunchedEffect(Unit) {
+        val isGranted = permissionsController.isPermissionGranted(Permission.LOCATION)
+        if (isGranted) {
+            Napier.d(tag = TAG) { "Location permission already granted on entry, getting location..." }
+            val location = locationProvider.getCurrentLocation()
+            if (location != null) {
+                viewModel.onUserLocationReceived(location.latitude, location.longitude)
+            }
+        }
+    }
+
     // Handle system permission request when triggered by ViewModel
     LaunchedEffect(uiState.shouldRequestPermission) {
         if (uiState.shouldRequestPermission) {
+            var locationDoNotAsk = false
             try {
                 permissionsController.providePermission(Permission.LOCATION)
                 // Permission granted - get location
+                locationDoNotAsk = true
                 Napier.d(tag = TAG) { "Location permission granted, getting location..." }
                 val location = locationProvider.getCurrentLocation()
                 if (location != null) {
@@ -76,15 +90,16 @@ fun ExploreScreen(
                 } else {
                     Napier.w(tag = TAG) { "Could not get current location" }
                 }
-            } catch (e: DeniedAlwaysException) {
+            } catch (_: DeniedAlwaysException) {
                 Napier.w(tag = TAG) { "Location permission denied permanently" }
                 viewModel.onPermissionDeniedPermanently()
-            } catch (e: DeniedException) {
+                locationDoNotAsk = true
+            } catch (_: DeniedException) {
                 Napier.w(tag = TAG) { "Location permission denied" }
             } catch (e: Exception) {
                 Napier.e(tag = TAG, throwable = e) { "Error getting location" }
             }
-            viewModel.onPermissionRequestCompleted()
+            viewModel.onPermissionRequestCompleted(locationDoNotAsk = locationDoNotAsk)
         }
     }
 

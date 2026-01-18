@@ -7,7 +7,9 @@ import com.brewery.searcher.core.datastore.UserSettingsDataSource
 import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.core.network.api.ApiException
 import com.brewery.searcher.feature.explore.model.CameraPosition
+import com.brewery.searcher.feature.explore.model.VisibleBounds
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -51,7 +53,12 @@ class ExploreViewModel(
         viewModelScope.launch {
             val settings = userSettingsDataSource.userData.first()
             if (!settings.locationDoNotAsk) {
-                _uiState.update { it.copy(showLocationRationaleDialog = true) }
+                // Small delay to let screen check if permission is already granted
+                delay(200)
+                // Only show dialog if location wasn't already received
+                if (_uiState.value.initialCameraPosition == CameraPosition.DEFAULT_US_CENTER) {
+                    _uiState.update { it.copy(showLocationRationaleDialog = true) }
+                }
             }
         }
     }
@@ -73,7 +80,13 @@ class ExploreViewModel(
         }
     }
 
-    fun onPermissionRequestCompleted() {
+    fun onPermissionRequestCompleted(locationDoNotAsk: Boolean) {
+        if (locationDoNotAsk) {
+            viewModelScope.launch {
+                userSettingsDataSource.setLocationDoNotAsk(true)
+                Napier.d(tag = TAG) { "User selected 'do not ask again' for location permission" }
+            }
+        }
         _uiState.update { it.copy(shouldRequestPermission = false) }
     }
 
@@ -92,15 +105,25 @@ class ExploreViewModel(
         }
     }
 
-    fun onCameraMoved(latitude: Double, longitude: Double, zoom: Float) {
+    fun onCameraMoved(latitude: Double, longitude: Double, zoom: Float, bounds: VisibleBounds?) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             val perPage = calculatePerPage(zoom)
             try {
                 val breweries = breweryRepository.getBreweriesByDistance(latitude, longitude, perPage)
-                _uiState.update { it.copy(breweries = breweries, isLoading = false) }
-                Napier.d(tag = TAG) { "Loaded ${breweries.size} breweries (perPage=$perPage, zoom=$zoom)" }
+                val filteredBreweries = if (bounds != null) {
+                    breweries.filter { brewery ->
+                        val lat = brewery.latitude ?: return@filter false
+                        val lng = brewery.longitude ?: return@filter false
+                        lat in bounds.southWestLat..bounds.northEastLat &&
+                            lng in bounds.southWestLng..bounds.northEastLng
+                    }
+                } else {
+                    breweries
+                }
+                _uiState.update { it.copy(breweries = filteredBreweries, isLoading = false) }
+                Napier.d(tag = TAG) { "Loaded ${filteredBreweries.size}/${breweries.size} breweries (perPage=$perPage, zoom=$zoom)" }
             } catch (e: ApiException) {
                 Napier.e(tag = TAG, throwable = e) { "API error fetching breweries" }
                 _uiState.update { it.copy(error = e.userMessage, isLoading = false) }

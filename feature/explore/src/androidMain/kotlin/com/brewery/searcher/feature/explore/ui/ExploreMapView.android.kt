@@ -6,6 +6,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.feature.explore.model.CameraPosition
+import com.brewery.searcher.feature.explore.model.VisibleBounds
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
@@ -26,7 +27,7 @@ actual fun ExploreMapView(
     breweries: List<Brewery>,
     selectedBreweryId: String?,
     initialCameraPosition: CameraPosition,
-    onCameraMoved: (latitude: Double, longitude: Double, zoom: Float) -> Unit,
+    onCameraMoved: (latitude: Double, longitude: Double, zoom: Float, bounds: VisibleBounds?) -> Unit,
     onBrewerySelected: (Brewery) -> Unit,
     modifier: Modifier,
 ) {
@@ -49,11 +50,23 @@ actual fun ExploreMapView(
 
     // Debounce camera movements in the UI layer (500ms)
     LaunchedEffect(cameraPositionState) {
-        snapshotFlow { cameraPositionState.position }
+        snapshotFlow {
+            val position = cameraPositionState.position
+            val latLngBounds = cameraPositionState.projection?.visibleRegion?.latLngBounds
+            position to latLngBounds
+        }
             .debounce(CAMERA_DEBOUNCE_MS)
             .distinctUntilChanged()
-            .collect { position ->
-                onCameraMoved(position.target.latitude, position.target.longitude, position.zoom)
+            .collect { (position, latLngBounds) ->
+                val bounds = latLngBounds?.let {
+                    VisibleBounds(
+                        northEastLat = it.northeast.latitude,
+                        northEastLng = it.northeast.longitude,
+                        southWestLat = it.southwest.latitude,
+                        southWestLng = it.southwest.longitude,
+                    )
+                }
+                onCameraMoved(position.target.latitude, position.target.longitude, position.zoom, bounds)
             }
     }
 

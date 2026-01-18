@@ -86,6 +86,21 @@
 
 ---
 
+## Documentation & AI Workflow
+
+- The `docs/` folder contains a collection of **larger task definitions** that were created to guide the AI agents during development.
+- These documents describe:
+    - Feature-level goals
+    - Architectural decisions
+    - Step-by-step implementation plans
+- They were used to:
+    - Break down the task into manageable units
+    - Coordinate parallel work between multiple AI agents
+    - Maintain consistency in architecture and coding patterns
+- The `docs/` folder is included for transparency and to provide insight into the development and decision-making process.
+
+---
+
 ## Configuration
 
 - The Google Maps API key is stored in `local.properties`.

@@ -44,15 +44,15 @@ BrewerySearcher/
 │   ├── navigation/      # Type-safe navigation with dual-stack system
 │   ├── designsystem/    # Material3 theme, colors, typography
 │   ├── datastore/       # Proto-based user preferences (Wire + DataStore)
-│   ├── database/        # Local persistence (ready for Room/SQLite)
+│   ├── database/        # Room database with DAOs and entities
 │   ├── model/           # Domain models (Brewery, BreweryType, SearchType)
 │   ├── network/         # Ktor HTTP client + BreweryApiService
 │   └── data/            # Repository layer with paging support
 ├── feature/             # Feature modules following MVVM
 │   ├── home/            # Main search screen with brewery listing
-│   ├── explore/
-│   ├── activity/
-│   └── settings/
+│   ├── explore/         # Map-based brewery discovery
+│   ├── favorites/       # User's favorited breweries
+│   └── settings/        # App preferences
 ├── build-logic/         # Gradle convention plugins
 └── iosApp/              # Xcode project wrapper
 ```
@@ -105,6 +105,13 @@ Initialized in `composeApp/src/commonMain/kotlin/di/AppModule.kt`:
 - `BreweryRepository` returns `Flow<PagingData<Brewery>>`
 - `SearchBreweryPagingSource` handles paginated API calls
 - Mappers convert DTOs to domain models
+
+**Database layer (`core/database`):**
+- Room database: `BrewerySearcherDatabase` with DAOs for each entity
+- DAOs: `SearchHistoryDao`, `FavoriteBreweryDao` with Flow-based queries
+- Entities: `SearchHistoryEntity`, `FavoriteBreweryEntity`
+- Platform-specific database providers via expect/actual pattern
+- Repositories wrap DAOs and convert entities to domain models
 
 **Expect/Actual pattern** for platform-specific code:
 - Define `expect` in `commonMain/`

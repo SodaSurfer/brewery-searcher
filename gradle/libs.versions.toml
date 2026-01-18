@@ -24,6 +24,10 @@ napier = "2.7.1"
 ktor = "3.3.3"
 paging = "3.4.0-rc01"
 navigationevent = "1.0.1"
+room = "2.8.4"
+ksp = "2.3.4"
+sqlite = "2.6.2"
+kotlinx-datetime = "0.6.2"
 
 [libraries]
 # Gradle plugins (for build-logic)
@@ -64,6 +68,12 @@ paging-common = { module = "androidx.paging:paging-common", version.ref = "pagin
 paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
 navigationevent = { module = "androidx.navigationevent:navigationevent", version.ref = "navigationevent" }
 navigationevent-compose = { module = "androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
+room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
+room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
+sqlite-bundled = { module = "androidx.sqlite:sqlite-bundled", version.ref = "sqlite" }
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinx-datetime" }
+room-gradlePlugin = { group = "androidx.room", name = "room-gradle-plugin", version.ref = "room" }
+ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "symbol-processing-gradle-plugin", version.ref = "ksp" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
@@ -73,3 +83,5 @@ composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "k
 kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlinSerialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 wire = { id = "com.squareup.wire", version.ref = "wire" }
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+room = { id = "androidx.room", version.ref = "room" }

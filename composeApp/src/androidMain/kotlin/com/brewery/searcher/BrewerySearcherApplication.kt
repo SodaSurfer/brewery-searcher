@@ -2,6 +2,7 @@ package com.brewery.searcher
 
 import android.app.Application
 import com.brewery.searcher.core.common.isDebug
+import com.brewery.searcher.core.database.initializeDatabase
 import com.brewery.searcher.di.initKoin
 import io.github.aakira.napier.DebugAntilog
 import io.github.aakira.napier.Napier
@@ -13,6 +14,7 @@ class BrewerySearcherApplication : Application() {
         if (isDebug()) {
             Napier.base(DebugAntilog())
         }
+        initializeDatabase(this)
         initKoin {
             androidContext(this@BrewerySearcherApplication)
         }

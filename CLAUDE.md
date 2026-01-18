@@ -18,12 +18,17 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Run Android app (requires emulator/device)
 ./gradlew :composeApp:installDebug
 
+# Run tests
+./gradlew :composeApp:testDebugUnitTest
+
 # Clean build
 ./gradlew clean build
 
 # Sync Gradle (after changing dependencies)
 ./gradlew --refresh-dependencies
 ```
+
+Note: On Windows, use `.\gradlew.bat` instead of `./gradlew`.
 
 ## Architecture Overview
 
@@ -39,11 +44,12 @@ BrewerySearcher/
 │   ├── navigation/      # Type-safe navigation with dual-stack system
 │   ├── designsystem/    # Material3 theme, colors, typography
 │   ├── datastore/       # Proto-based user preferences (Wire + DataStore)
-│   ├── database/        # Local persistence (empty, ready for Room/SQLite)
-│   ├── model/           # Domain models (empty)
-│   └── network/         # API client (empty)
+│   ├── database/        # Local persistence (ready for Room/SQLite)
+│   ├── model/           # Domain models (Brewery, BreweryType, SearchType)
+│   ├── network/         # Ktor HTTP client + BreweryApiService
+│   └── data/            # Repository layer with paging support
 ├── feature/             # Feature modules following MVVM
-│   ├── home/
+│   ├── home/            # Main search screen with brewery listing
 │   ├── explore/
 │   ├── activity/
 │   └── settings/
@@ -89,6 +95,17 @@ Initialized in `composeApp/src/commonMain/kotlin/di/AppModule.kt`:
 - Wire compiler generates Kotlin classes
 - `UserSettingsDataSource` exposes `Flow<UserSettings>`
 
+**Network layer (`core/network`):**
+- `BreweryApiService` interface defines API contract
+- `BreweryApiServiceImpl` uses Ktor client for HTTP requests
+- Platform engines: OkHttp (Android), Darwin (iOS)
+- DTOs in `dto/` package, API exceptions in `api/ApiException.kt`
+
+**Repository layer (`core/data`):**
+- `BreweryRepository` returns `Flow<PagingData<Brewery>>`
+- `SearchBreweryPagingSource` handles paginated API calls
+- Mappers convert DTOs to domain models
+
 **Expect/Actual pattern** for platform-specific code:
 - Define `expect` in `commonMain/`
 - Implement `actual` in `androidMain/` and `iosMain/`
@@ -104,6 +121,8 @@ Initialized in `composeApp/src/commonMain/kotlin/di/AppModule.kt`:
 | Navigation3 | 1.0.0-alpha05 | Type-safe navigation |
 | Wire | 5.4.0 | Protobuf for datastore |
 | Napier | 2.7.1 | Multiplatform logging |
+| Ktor | 3.3.3 | HTTP client (OkHttp on Android, Darwin on iOS) |
+| Paging | 3.4.0-rc01 | Pagination support |
 
 ### Source Set Organization
 
@@ -126,9 +145,9 @@ Each module has platform source sets:
    ```
 3. Include in `settings.gradle.kts`: `include(":feature:{name}")`
 4. Create source sets following existing patterns:
-   - `{Name}Screen.kt`, `{Name}ViewModel.kt`
-   - `navigation/{Name}NavKey.kt`, `navigation/{Name}EntryProvider.kt`
-   - `di/{Name}Module.kt`
+    - `{Name}Screen.kt`, `{Name}ViewModel.kt`
+    - `navigation/{Name}NavKey.kt`, `navigation/{Name}EntryProvider.kt`
+    - `di/{Name}Module.kt`
 5. Register DI module in `composeApp/src/commonMain/kotlin/di/AppModule.kt`
 6. Add entry provider to `App.kt` NavDisplay
 
@@ -156,3 +175,33 @@ class MyNewClass {
 ```
 
 Only outputs in debug builds (controlled by `isDebug()` in Application class).
+
+### Creating Implementation Plans
+
+When planning a new feature or significant change, create an implementation document in the `docs/` folder. Follow the pattern established in `docs/search-feature-implementation.md`:
+
+**Document Structure:**
+1. **Scope** - What's in/out of scope (e.g., Android only vs cross-platform)
+2. **Overview** - Brief description of the feature and key capabilities
+3. **Implementation Phases** - Break down into discrete phases, each with:
+    - Goal statement
+    - Files to create/modify (table format)
+    - Dependencies to add (if any)
+    - Key patterns/code snippets
+    - End state (verification criteria)
+4. **Verification Checklist** - Testable acceptance criteria
+5. **Architecture Diagram** - ASCII diagram showing component relationships
+6. **Dependencies Summary** - All new dependencies in one place
+
+**Design Considerations (address in each phase where applicable):**
+- **Clean Architecture**: Separate concerns across layers (UI → ViewModel → Repository → DataSource/API). Domain models in `core/model`, DTOs in network layer, mappers to convert between them.
+- **Error Handling**: Define custom exceptions (e.g., `ApiException`), handle network failures gracefully, expose error states to UI via sealed classes or StateFlow.
+- **Edge Cases**: Empty states, offline scenarios, invalid input, pagination boundaries, rapid user input (debouncing).
+- **Security**: Validate/sanitize user input, avoid logging sensitive data, use HTTPS, handle auth token expiration.
+- **Efficiency & Performance**: Use pagination for lists, debounce search input, cache responses where appropriate, avoid unnecessary recompositions.
+- **Logging**: Add Napier logging at key points (API calls, errors, state changes) with appropriate TAG.
+
+**Naming Conventions:**
+- Document filename: `{feature-name}-implementation.md` (kebab-case)
+- Phases numbered sequentially: Phase 1, Phase 2, etc.
+- Tables for file listings with File | Purpose columns

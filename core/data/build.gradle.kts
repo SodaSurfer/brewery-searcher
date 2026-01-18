@@ -11,7 +11,9 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.model)
             implementation(projects.core.network)
+            implementation(projects.core.database)
             api(libs.paging.common)
+            implementation(libs.kotlinx.datetime)
         }
     }
 }

@@ -16,11 +16,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AssistChip
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,24 +36,31 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
+import androidx.compose.material3.SwipeToDismissBox
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.brewery.searcher.core.common.BackHandler
 import com.brewery.searcher.core.designsystem.component.BreweryListItem
 import com.brewery.searcher.core.designsystem.component.BreweryTopBar
 import com.brewery.searcher.core.model.Brewery
+import com.brewery.searcher.core.model.SearchHistory
 import com.brewery.searcher.core.model.SearchType
 import com.brewery.searcher.core.network.api.ApiException
 import org.koin.compose.viewmodel.koinViewModel
-import androidx.compose.ui.tooling.preview.Preview
-import com.brewery.searcher.core.common.BackHandler
 
 @Composable
 fun SearchScreen(
@@ -57,6 +72,7 @@ fun SearchScreen(
     val searchType by viewModel.searchType.collectAsState()
     val showBottomSheet by viewModel.showBottomSheet.collectAsState()
     val searchResults = viewModel.searchResults.collectAsLazyPagingItems()
+    val searchHistoryState by viewModel.searchHistoryState.collectAsState()
 
     BackHandler {
         onBackClick()
@@ -92,6 +108,7 @@ fun SearchScreen(
                     searchType = searchType,
                     onQueryChange = viewModel::onQueryChange,
                     onFilterClick = viewModel::onShowBottomSheet,
+                    onSearchSubmit = viewModel::onSearchSubmit,
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
@@ -99,6 +116,10 @@ fun SearchScreen(
                 SearchResultsContent(
                     searchResults = searchResults,
                     searchQuery = searchQuery,
+                    searchHistoryState = searchHistoryState,
+                    onHistoryItemClick = viewModel::onHistoryItemClick,
+                    onDeleteHistoryItem = viewModel::onDeleteHistoryItem,
+                    onClearHistory = viewModel::onClearHistory,
                 )
             }
         }
@@ -119,8 +140,11 @@ private fun SearchBar(
     searchType: SearchType,
     onQueryChange: (String) -> Unit,
     onFilterClick: () -> Unit,
+    onSearchSubmit: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
     Column(modifier = modifier) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -142,7 +166,14 @@ private fun SearchBar(
                 colors = OutlinedTextFieldDefaults.colors(
                     focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
                     unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                )
+                ),
+                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                keyboardActions = KeyboardActions(
+                    onDone = {
+                        onSearchSubmit()
+                        keyboardController?.hide()
+                    }
+                ),
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -177,14 +208,43 @@ private fun SearchBar(
 private fun SearchResultsContent(
     searchResults: LazyPagingItems<Brewery>,
     searchQuery: String,
+    searchHistoryState: SearchHistoryState,
+    onHistoryItemClick: (SearchHistory) -> Unit,
+    onDeleteHistoryItem: (Long) -> Unit,
+    onClearHistory: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     when {
         searchQuery.isBlank() -> {
-            EmptySearchState(
-                message = "Start typing to find breweries",
-                modifier = modifier,
-            )
+            when (searchHistoryState) {
+                is SearchHistoryState.Loading -> {
+                    LoadingState(modifier = modifier)
+                }
+                is SearchHistoryState.Error -> {
+                    ErrorState(
+                        title = "History error",
+                        message = searchHistoryState.message,
+                        onRetry = null,
+                        modifier = modifier,
+                    )
+                }
+                is SearchHistoryState.Success -> {
+                    if (searchHistoryState.history.isEmpty()) {
+                        EmptySearchState(
+                            message = "Start typing to find breweries",
+                            modifier = modifier,
+                        )
+                    } else {
+                        SearchHistoryList(
+                            history = searchHistoryState.history,
+                            onItemClick = onHistoryItemClick,
+                            onDeleteItem = onDeleteHistoryItem,
+                            onClearAll = onClearHistory,
+                            modifier = modifier,
+                        )
+                    }
+                }
+            }
         }
 
         searchQuery.trim().length < 3 -> {
@@ -226,6 +286,138 @@ private fun SearchResultsContent(
 }
 
 @Composable
+private fun SearchHistoryList(
+    history: List<SearchHistory>,
+    onItemClick: (SearchHistory) -> Unit,
+    onDeleteItem: (Long) -> Unit,
+    onClearAll: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = 16.dp),
+    ) {
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Recent searches",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                TextButton(onClick = onClearAll) {
+                    Text("Clear all")
+                }
+            }
+        }
+
+        items(
+            items = history,
+            key = { it.id },
+        ) { item ->
+            SearchHistoryItem(
+                item = item,
+                onClick = { onItemClick(item) },
+                onDelete = { onDeleteItem(item.id) },
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SearchHistoryItem(
+    item: SearchHistory,
+    onClick: () -> Unit,
+    onDelete: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val dismissState = rememberSwipeToDismissBoxState(
+        confirmValueChange = { value ->
+            if (value == SwipeToDismissBoxValue.EndToStart) {
+                onDelete()
+                true
+            } else {
+                false
+            }
+        }
+    )
+
+    SwipeToDismissBox(
+        state = dismissState,
+        backgroundContent = {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.errorContainer)
+                    .padding(horizontal = 16.dp),
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete",
+                    tint = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            }
+        },
+        modifier = modifier,
+        enableDismissFromStartToEnd = false,
+    ) {
+        Surface(
+            onClick = onClick,
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surface,
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Icon(
+                    imageVector = Icons.Default.History,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+                Text(
+                    text = item.query,
+                    style = MaterialTheme.typography.bodyLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                AssistChip(
+                    onClick = {},
+                    label = {
+                        Text(
+                            text = item.searchType.displayName,
+                            style = MaterialTheme.typography.labelSmall,
+                        )
+                    },
+                )
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(32.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Close,
+                        contentDescription = "Delete",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun EmptySearchState(
     message: String,
     modifier: Modifier = Modifier,
@@ -256,7 +448,7 @@ private fun LoadingState(modifier: Modifier = Modifier) {
 private fun ErrorState(
     title: String,
     message: String,
-    onRetry: () -> Unit,
+    onRetry: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     Box(
@@ -277,13 +469,15 @@ private fun ErrorState(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "Tap to retry",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.clickable { onRetry() },
-            )
+            if (onRetry != null) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "Tap to retry",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable { onRetry() },
+                )
+            }
         }
     }
 }
@@ -364,6 +558,7 @@ fun PreviewSearchBar() {
             searchType = SearchType.BY_CITY,
             onQueryChange = {},
             onFilterClick = {},
+            onSearchSubmit = {},
             modifier = Modifier.padding(16.dp)
         )
     }
@@ -378,5 +573,3 @@ fun PreviewEmptyState() {
         }
     }
 }
-
-

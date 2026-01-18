@@ -1,5 +1,7 @@
 package com.brewery.searcher.feature.home
 
+import com.brewery.searcher.core.designsystem.component.BreweryListItem
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -271,7 +273,7 @@ private fun BreweryList(
         ) { index ->
             val brewery = searchResults[index]
             if (brewery != null) {
-                BreweryItem(brewery = brewery)
+                BreweryListItem(brewery = brewery)
             }
         }
 

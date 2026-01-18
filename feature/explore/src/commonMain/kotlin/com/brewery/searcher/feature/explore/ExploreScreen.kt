@@ -2,17 +2,17 @@ package com.brewery.searcher.feature.explore
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material3.Badge
-import androidx.compose.material3.BadgedBox
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -24,11 +24,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import com.brewery.searcher.feature.explore.ui.BreweryListBottomSheet
 import com.brewery.searcher.feature.explore.ui.ExploreMapView
 import com.brewery.searcher.feature.explore.ui.SelectedBreweryBottomSheet
 import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreScreen(
     modifier: Modifier = Modifier,
@@ -47,33 +51,20 @@ fun ExploreScreen(
         }
     }
 
-    Scaffold(
-        modifier = modifier,
-        snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            if (uiState.breweries.isNotEmpty()) {
-                BadgedBox(
-                    badge = {
-                        Badge {
-                            Text("${uiState.breweries.size}")
-                        }
-                    }
-                ) {
-                    FloatingActionButton(onClick = viewModel::onShowBottomSheet) {
-                        Icon(
-                            imageVector = Icons.Default.List,
-                            contentDescription = "Show breweries"
-                        )
-                    }
-                }
-            }
-        },
-    ) { paddingValues ->
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues),
-        ) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+    ) {
+        Text(
+            modifier = Modifier.fillMaxWidth()
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(20.dp),
+            textAlign = TextAlign.Center,
+            text = "Explore Breweries",
+            style = MaterialTheme.typography.titleMedium.copy(
+                fontWeight = FontWeight.Bold
+            )
+        )
+        Box(modifier = Modifier.fillMaxSize()) {
             ExploreMapView(
                 breweries = uiState.breweries,
                 selectedBreweryId = uiState.selectedBrewery?.id,
@@ -85,6 +76,31 @@ fun ExploreScreen(
             if (uiState.isLoading) {
                 LoadingOverlay()
             }
+
+            if (uiState.breweries.isNotEmpty()) {
+                ExtendedFloatingActionButton(
+                    onClick = viewModel::onShowBottomSheet,
+                    icon = {
+                        Icon(
+                            imageVector = Icons.Default.List,
+                            contentDescription = null
+                        )
+                    },
+                    text = {
+                        Text("View List (${uiState.breweries.size})")
+                    },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                )
+            }
+
+            SnackbarHost(
+                hostState = snackbarHostState,
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
         }
     }
 

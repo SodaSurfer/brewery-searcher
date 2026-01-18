@@ -101,13 +101,6 @@
 
 ---
 
-## Configuration
-
-- The Google Maps API key is stored in `local.properties`.
-- It was intentionally committed to the repository **only for evaluation convenience**, so the project can run immediately.
-
----
-
 ## Possible Improvements With More Time
 
 - Add unit tests and UI tests.

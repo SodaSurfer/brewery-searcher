@@ -20,6 +20,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -47,9 +48,9 @@ fun HomeScreen(
             textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onBackground
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         Text(
             text = "Find the best local breweries near you",
             style = MaterialTheme.typography.bodyLarge,
@@ -61,6 +62,7 @@ fun HomeScreen(
 
         Surface(
             modifier = Modifier
+                .clip(RoundedCornerShape(28.dp))
                 .fillMaxWidth()
                 .height(56.dp)
                 .clickable { onNavigate(SearchNavKey) },

@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -27,10 +27,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.brewery.searcher.feature.explore.location.rememberLocationProvider
 import com.brewery.searcher.feature.explore.ui.BreweryListBottomSheet
 import com.brewery.searcher.feature.explore.ui.ExploreMapView
+import com.brewery.searcher.feature.explore.ui.LocationPermissionDialog
+import com.brewery.searcher.feature.explore.ui.PermissionDeniedDialog
 import com.brewery.searcher.feature.explore.ui.SelectedBreweryBottomSheet
+import dev.icerock.moko.permissions.DeniedAlwaysException
+import dev.icerock.moko.permissions.DeniedException
+import dev.icerock.moko.permissions.Permission
+import dev.icerock.moko.permissions.compose.BindEffect
+import dev.icerock.moko.permissions.compose.rememberPermissionsControllerFactory
+import dev.icerock.moko.permissions.location.LOCATION
+import io.github.aakira.napier.Napier
 import org.koin.compose.viewmodel.koinViewModel
+
+private const val TAG = "ExploreScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +53,56 @@ fun ExploreScreen(
     val uiState by viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
+    // moko-permissions controller
+    val permissionsFactory = rememberPermissionsControllerFactory()
+    val permissionsController = remember(permissionsFactory) {
+        permissionsFactory.createPermissionsController()
+    }
+    BindEffect(permissionsController)
+
+    // Location provider for getting actual location
+    val locationProvider = rememberLocationProvider()
+
+    // Check permission on screen entry and get location if already granted
+    LaunchedEffect(Unit) {
+        val isGranted = permissionsController.isPermissionGranted(Permission.LOCATION)
+        if (isGranted) {
+            Napier.d(tag = TAG) { "Location permission already granted on entry, getting location..." }
+            val location = locationProvider.getCurrentLocation()
+            if (location != null) {
+                viewModel.onUserLocationReceived(location.latitude, location.longitude)
+            }
+        }
+    }
+
+    // Handle system permission request when triggered by ViewModel
+    LaunchedEffect(uiState.shouldRequestPermission) {
+        if (uiState.shouldRequestPermission) {
+            var locationDoNotAsk = false
+            try {
+                permissionsController.providePermission(Permission.LOCATION)
+                // Permission granted - get location
+                locationDoNotAsk = true
+                Napier.d(tag = TAG) { "Location permission granted, getting location..." }
+                val location = locationProvider.getCurrentLocation()
+                if (location != null) {
+                    viewModel.onUserLocationReceived(location.latitude, location.longitude)
+                } else {
+                    Napier.w(tag = TAG) { "Could not get current location" }
+                }
+            } catch (_: DeniedAlwaysException) {
+                Napier.w(tag = TAG) { "Location permission denied permanently" }
+                viewModel.onPermissionDeniedPermanently()
+                locationDoNotAsk = true
+            } catch (_: DeniedException) {
+                Napier.w(tag = TAG) { "Location permission denied" }
+            } catch (e: Exception) {
+                Napier.e(tag = TAG, throwable = e) { "Error getting location" }
+            }
+            viewModel.onPermissionRequestCompleted(locationDoNotAsk = locationDoNotAsk)
+        }
+    }
+
     LaunchedEffect(uiState.error) {
         uiState.error?.let { error ->
             snackbarHostState.showSnackbar(
@@ -49,6 +111,21 @@ fun ExploreScreen(
             )
             viewModel.clearError()
         }
+    }
+
+    // Show rationale dialog
+    if (uiState.showLocationRationaleDialog) {
+        LocationPermissionDialog(
+            onConfirm = viewModel::onRationaleDialogConfirm,
+            onDismiss = viewModel::onRationaleDialogDismiss,
+        )
+    }
+
+    // Show permission denied dialog
+    if (uiState.showPermissionDeniedDialog) {
+        PermissionDeniedDialog(
+            onDismiss = viewModel::onDismissPermissionDeniedDialog,
+        )
     }
 
     Column(
@@ -68,6 +145,7 @@ fun ExploreScreen(
             ExploreMapView(
                 breweries = uiState.breweries,
                 selectedBreweryId = uiState.selectedBrewery?.id,
+                initialCameraPosition = uiState.initialCameraPosition,
                 onCameraMoved = viewModel::onCameraMoved,
                 onBrewerySelected = viewModel::onBrewerySelected,
                 modifier = Modifier.fillMaxSize(),

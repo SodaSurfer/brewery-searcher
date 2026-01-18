@@ -5,8 +5,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import com.brewery.searcher.core.model.Brewery
+import com.brewery.searcher.feature.explore.model.CameraPosition
+import com.brewery.searcher.feature.explore.model.VisibleBounds
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.GoogleMap
 import com.google.maps.android.compose.Marker
@@ -15,6 +17,7 @@ import com.google.maps.android.compose.rememberCameraPositionState
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
+import com.google.android.gms.maps.model.CameraPosition as GoogleCameraPosition
 
 private const val CAMERA_DEBOUNCE_MS = 500L
 
@@ -23,22 +26,47 @@ private const val CAMERA_DEBOUNCE_MS = 500L
 actual fun ExploreMapView(
     breweries: List<Brewery>,
     selectedBreweryId: String?,
-    onCameraMoved: (latitude: Double, longitude: Double, zoom: Float) -> Unit,
+    initialCameraPosition: CameraPosition,
+    onCameraMoved: (latitude: Double, longitude: Double, zoom: Float, bounds: VisibleBounds?) -> Unit,
     onBrewerySelected: (Brewery) -> Unit,
     modifier: Modifier,
 ) {
     val cameraPositionState = rememberCameraPositionState {
-        // Default to US center
-        position = CameraPosition.fromLatLngZoom(LatLng(39.8283, -98.5795), 4f)
+        position = GoogleCameraPosition.fromLatLngZoom(
+            LatLng(initialCameraPosition.latitude, initialCameraPosition.longitude),
+            initialCameraPosition.zoom
+        )
+    }
+
+    // Animate to new position when initialCameraPosition changes
+    LaunchedEffect(initialCameraPosition) {
+        cameraPositionState.animate(
+            CameraUpdateFactory.newLatLngZoom(
+                LatLng(initialCameraPosition.latitude, initialCameraPosition.longitude),
+                initialCameraPosition.zoom
+            )
+        )
     }
 
     // Debounce camera movements in the UI layer (500ms)
     LaunchedEffect(cameraPositionState) {
-        snapshotFlow { cameraPositionState.position }
+        snapshotFlow {
+            val position = cameraPositionState.position
+            val latLngBounds = cameraPositionState.projection?.visibleRegion?.latLngBounds
+            position to latLngBounds
+        }
             .debounce(CAMERA_DEBOUNCE_MS)
             .distinctUntilChanged()
-            .collect { position ->
-                onCameraMoved(position.target.latitude, position.target.longitude, position.zoom)
+            .collect { (position, latLngBounds) ->
+                val bounds = latLngBounds?.let {
+                    VisibleBounds(
+                        northEastLat = it.northeast.latitude,
+                        northEastLng = it.northeast.longitude,
+                        southWestLat = it.southwest.latitude,
+                        southWestLng = it.southwest.longitude,
+                    )
+                }
+                onCameraMoved(position.target.latitude, position.target.longitude, position.zoom, bounds)
             }
     }
 

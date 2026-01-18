@@ -10,4 +10,5 @@ enum DarkThemeConfigProto {
 
 message UserSettings {
   DarkThemeConfigProto dark_theme_config = 1;
+  bool location_permission_do_not_ask = 2;
 }

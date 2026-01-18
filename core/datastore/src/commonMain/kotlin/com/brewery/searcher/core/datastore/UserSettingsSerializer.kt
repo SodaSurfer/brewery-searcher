@@ -27,6 +27,7 @@ fun ProtoUserSettings.toUserSettings(): UserSettings {
             DarkThemeConfigProto.DARK_THEME_CONFIG_LIGHT -> DarkThemeConfig.LIGHT
             DarkThemeConfigProto.DARK_THEME_CONFIG_DARK -> DarkThemeConfig.DARK
             else -> DarkThemeConfig.FOLLOW_SYSTEM
-        }
+        },
+        locationDoNotAsk = location_permission_do_not_ask,
     )
 }

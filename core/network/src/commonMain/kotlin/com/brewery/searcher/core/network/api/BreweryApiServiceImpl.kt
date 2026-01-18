@@ -6,6 +6,12 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
+import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.isSuccess
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 class BreweryApiServiceImpl(
     private val httpClient: HttpClient,
@@ -16,6 +22,23 @@ class BreweryApiServiceImpl(
         private const val BASE_URL = "https://api.openbrewerydb.org/v1/breweries"
     }
 
+    private suspend fun HttpResponse.parseErrorMessage(): String {
+        return try {
+            val body = bodyAsText()
+            val json = Json.parseToJsonElement(body).jsonObject
+            json["message"]?.jsonPrimitive?.content ?: "Unknown error"
+        } catch (e: Exception) {
+            "Request failed"
+        }
+    }
+
+    private suspend inline fun <reified T> HttpResponse.bodyOrThrow(): T {
+        if (!status.isSuccess()) {
+            throw ApiException(parseErrorMessage())
+        }
+        return body()
+    }
+
     override suspend fun searchBreweries(query: String, page: Int, perPage: Int): List<BreweryDto> {
         Napier.d(tag = TAG) { "searchBreweries(query=$query, page=$page, perPage=$perPage)" }
         return try {
@@ -23,7 +46,7 @@ class BreweryApiServiceImpl(
                 parameter("query", query)
                 parameter("page", page)
                 parameter("per_page", perPage)
-            }.body()
+            }.bodyOrThrow()
         } catch (e: Exception) {
             Napier.e(tag = TAG, throwable = e) { "searchBreweries failed" }
             throw e
@@ -37,7 +60,7 @@ class BreweryApiServiceImpl(
                 parameter("by_city", city)
                 parameter("page", page)
                 parameter("per_page", perPage)
-            }.body()
+            }.bodyOrThrow()
         } catch (e: Exception) {
             Napier.e(tag = TAG, throwable = e) { "getBreweriesByCity failed" }
             throw e
@@ -51,7 +74,7 @@ class BreweryApiServiceImpl(
                 parameter("by_country", country)
                 parameter("page", page)
                 parameter("per_page", perPage)
-            }.body()
+            }.bodyOrThrow()
         } catch (e: Exception) {
             Napier.e(tag = TAG, throwable = e) { "getBreweriesByCountry failed" }
             throw e
@@ -65,7 +88,7 @@ class BreweryApiServiceImpl(
                 parameter("by_state", state)
                 parameter("page", page)
                 parameter("per_page", perPage)
-            }.body()
+            }.bodyOrThrow()
         } catch (e: Exception) {
             Napier.e(tag = TAG, throwable = e) { "getBreweriesByState failed" }
             throw e

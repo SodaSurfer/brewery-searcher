@@ -11,6 +11,7 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.core.data)
             implementation(projects.core.model)
+            implementation(projects.core.network)
             implementation(libs.compose.material.icons.extended)
             implementation(libs.paging.common)
             implementation(libs.paging.compose)

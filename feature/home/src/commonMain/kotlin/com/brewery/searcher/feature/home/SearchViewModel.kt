@@ -29,6 +29,7 @@ class SearchViewModel(
 
     companion object {
         val TAG = SearchViewModel::class.simpleName
+        private const val MAX_QUERY_LENGTH = 100
     }
 
     private val exceptionHandler = CoroutineExceptionHandler { _, throwable ->
@@ -50,10 +51,11 @@ class SearchViewModel(
     ) { query, type ->
         query to type
     }.flatMapLatest { (query, type) ->
-        if (query.isBlank()) {
+        val trimmedQuery = query.trim()
+        if (trimmedQuery.length < 3) {
             flowOf(PagingData.empty())
         } else {
-            breweryRepository.searchBreweries(query.trim(), type)
+            breweryRepository.searchBreweries(trimmedQuery, type)
         }
     }.catch { e ->
         Napier.e(tag = TAG, throwable = e) { "Search flow error" }
@@ -62,7 +64,7 @@ class SearchViewModel(
 
     fun onQueryChange(query: String) {
         Napier.d(tag = TAG) { "onQueryChange(query=$query)" }
-        _searchQuery.value = query
+        _searchQuery.value = query.take(MAX_QUERY_LENGTH)
     }
 
     fun onSearchTypeSelected(type: SearchType) {

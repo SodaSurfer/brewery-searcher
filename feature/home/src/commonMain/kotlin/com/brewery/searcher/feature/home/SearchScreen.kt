@@ -17,30 +17,25 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.core.model.SearchType
+import com.brewery.searcher.core.network.api.ApiException
 import org.koin.compose.viewmodel.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -136,7 +131,17 @@ private fun SearchResultsContent(
 ) {
     when {
         searchQuery.isBlank() -> {
-            EmptySearchState(modifier = modifier)
+            EmptySearchState(
+                message = "Enter a search query to find breweries",
+                modifier = modifier,
+            )
+        }
+
+        searchQuery.trim().length < 3 -> {
+            EmptySearchState(
+                message = "Enter at least 3 characters to search",
+                modifier = modifier,
+            )
         }
 
         searchResults.loadState.refresh is LoadState.Loading -> {
@@ -145,8 +150,13 @@ private fun SearchResultsContent(
 
         searchResults.loadState.refresh is LoadState.Error -> {
             val error = (searchResults.loadState.refresh as LoadState.Error).error
+            val message = when (error) {
+                is ApiException -> error.userMessage
+                else -> error.message ?: "Unknown error"
+            }
             ErrorState(
-                message = error.message ?: "Unknown error",
+                title = "Search failed",
+                message = message,
                 onRetry = { searchResults.retry() },
                 modifier = modifier,
             )
@@ -166,13 +176,16 @@ private fun SearchResultsContent(
 }
 
 @Composable
-private fun EmptySearchState(modifier: Modifier = Modifier) {
+private fun EmptySearchState(
+    message: String,
+    modifier: Modifier = Modifier,
+) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = "Enter a search query to find breweries",
+            text = message,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -191,6 +204,7 @@ private fun LoadingState(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ErrorState(
+    title: String,
     message: String,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
@@ -203,11 +217,17 @@ private fun ErrorState(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                text = "Error: $message",
-                style = MaterialTheme.typography.bodyLarge,
+                text = title,
+                style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.error,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = message,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(modifier = Modifier.height(16.dp))
             Text(
                 text = "Tap to retry",
                 style = MaterialTheme.typography.bodyMedium,
@@ -285,87 +305,3 @@ private fun BreweryList(
     }
 }
 
-@Composable
-private fun BreweryItem(
-    brewery: Brewery,
-    modifier: Modifier = Modifier,
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Text(
-                text = brewery.name,
-                style = MaterialTheme.typography.titleMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            val location = listOfNotNull(brewery.city, brewery.stateProvince, brewery.country)
-                .joinToString(", ")
-            if (location.isNotEmpty()) {
-                Text(
-                    text = location,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = brewery.breweryType.name.lowercase().replaceFirstChar { it.uppercase() },
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun SearchTypeBottomSheet(
-    currentType: SearchType,
-    onTypeSelected: (SearchType) -> Unit,
-    onDismiss: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val sheetState = rememberModalBottomSheetState()
-
-    ModalBottomSheet(
-        onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        modifier = modifier,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 32.dp),
-        ) {
-            Text(
-                text = "Search by",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-            )
-
-            SearchType.entries.forEach { type ->
-                ListItem(
-                    headlineContent = { Text(type.displayName) },
-                    leadingContent = {
-                        RadioButton(
-                            selected = type == currentType,
-                            onClick = { onTypeSelected(type) },
-                        )
-                    },
-                    modifier = Modifier.clickable { onTypeSelected(type) },
-                )
-            }
-        }
-    }
-}

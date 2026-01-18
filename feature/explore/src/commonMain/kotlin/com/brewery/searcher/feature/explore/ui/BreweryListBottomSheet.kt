@@ -26,6 +26,7 @@ import com.brewery.searcher.core.designsystem.component.BreweryListItem
 @Composable
 fun BreweryListBottomSheet(
     breweries: List<Brewery>,
+    onBreweryClick: (Brewery) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -57,7 +58,10 @@ fun BreweryListBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 items(breweries, key = { it.id }) { brewery ->
-                    BreweryListItem(brewery = brewery)
+                    BreweryListItem(
+                        brewery = brewery,
+                        onClick = { onBreweryClick(brewery) },
+                    )
                 }
             }
         }

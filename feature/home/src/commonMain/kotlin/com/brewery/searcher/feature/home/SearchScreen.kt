@@ -42,10 +42,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberSwipeToDismissBoxState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
@@ -60,6 +64,7 @@ import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.core.model.SearchHistory
 import com.brewery.searcher.core.model.SearchType
 import com.brewery.searcher.core.network.api.ApiException
+import kotlinx.coroutines.delay
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
@@ -74,6 +79,12 @@ fun SearchScreen(
     val showBottomSheet by viewModel.showBottomSheet.collectAsState()
     val searchResults = viewModel.searchResults.collectAsLazyPagingItems()
     val searchHistoryState by viewModel.searchHistoryState.collectAsState()
+
+    val focusRequester = remember { FocusRequester() }
+    LaunchedEffect(Unit) {
+        delay(500)
+        focusRequester.requestFocus()
+    }
 
     BackHandler {
         onBackClick()
@@ -111,6 +122,7 @@ fun SearchScreen(
                     onQueryChange = viewModel::onQueryChange,
                     onFilterClick = viewModel::onShowBottomSheet,
                     onSearchSubmit = viewModel::onSearchSubmit,
+                    focusRequester = focusRequester
                 )
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -145,6 +157,7 @@ private fun SearchBar(
     onFilterClick: () -> Unit,
     onSearchSubmit: () -> Unit,
     modifier: Modifier = Modifier,
+    focusRequester: FocusRequester
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -156,7 +169,8 @@ private fun SearchBar(
             OutlinedTextField(
                 value = query,
                 onValueChange = onQueryChange,
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.weight(1f)
+                    .focusRequester(focusRequester),
                 placeholder = { Text("Search for breweries...") },
                 leadingIcon = {
                     Icon(
@@ -582,7 +596,8 @@ fun PreviewSearchBar() {
             onQueryChange = {},
             onFilterClick = {},
             onSearchSubmit = {},
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp),
+            focusRequester = remember { FocusRequester() }
         )
     }
 }

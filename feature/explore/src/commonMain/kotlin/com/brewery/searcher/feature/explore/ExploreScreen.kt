@@ -186,6 +186,10 @@ fun ExploreScreen(
     if (uiState.showBottomSheet) {
         BreweryListBottomSheet(
             breweries = uiState.breweries,
+            onBreweryClick = { brewery ->
+                viewModel.onDismissBottomSheet()
+                viewModel.onBrewerySelected(brewery)
+            },
             onDismiss = viewModel::onDismissBottomSheet,
         )
     }

@@ -3,12 +3,15 @@ package com.brewery.searcher.feature.explore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brewery.searcher.core.data.repository.BreweryRepository
+import com.brewery.searcher.core.datastore.UserSettingsDataSource
 import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.core.network.api.ApiException
+import com.brewery.searcher.feature.explore.model.CameraPosition
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -18,10 +21,15 @@ data class ExploreUiState(
     val error: String? = null,
     val showBottomSheet: Boolean = false,
     val selectedBrewery: Brewery? = null,
+    val initialCameraPosition: CameraPosition = CameraPosition.DEFAULT_US_CENTER,
+    val showLocationRationaleDialog: Boolean = false,
+    val showPermissionDeniedDialog: Boolean = false,
+    val shouldRequestPermission: Boolean = false,
 )
 
 class ExploreViewModel(
     private val breweryRepository: BreweryRepository,
+    private val userSettingsDataSource: UserSettingsDataSource,
 ) : ViewModel() {
 
     companion object {
@@ -38,6 +46,51 @@ class ExploreViewModel(
 
     private val _uiState = MutableStateFlow(ExploreUiState())
     val uiState: StateFlow<ExploreUiState> = _uiState.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            val settings = userSettingsDataSource.userData.first()
+            if (!settings.locationDoNotAsk) {
+                _uiState.update { it.copy(showLocationRationaleDialog = true) }
+            }
+        }
+    }
+
+    fun onRationaleDialogConfirm() {
+        _uiState.update {
+            it.copy(showLocationRationaleDialog = false, shouldRequestPermission = true)
+        }
+    }
+
+    fun onRationaleDialogDismiss(doNotAskAgain: Boolean) {
+        _uiState.update { it.copy(showLocationRationaleDialog = false) }
+
+        if (doNotAskAgain) {
+            viewModelScope.launch {
+                userSettingsDataSource.setLocationDoNotAsk(true)
+                Napier.d(tag = TAG) { "User selected 'do not ask again' for location permission" }
+            }
+        }
+    }
+
+    fun onPermissionRequestCompleted() {
+        _uiState.update { it.copy(shouldRequestPermission = false) }
+    }
+
+    fun onPermissionDeniedPermanently() {
+        _uiState.update { it.copy(showPermissionDeniedDialog = true) }
+    }
+
+    fun onDismissPermissionDeniedDialog() {
+        _uiState.update { it.copy(showPermissionDeniedDialog = false) }
+    }
+
+    fun onUserLocationReceived(latitude: Double, longitude: Double) {
+        Napier.d(tag = TAG) { "User location received: ($latitude, $longitude)" }
+        _uiState.update {
+            it.copy(initialCameraPosition = CameraPosition(latitude, longitude, 12f))
+        }
+    }
 
     fun onCameraMoved(latitude: Double, longitude: Double, zoom: Float) {
         viewModelScope.launch {

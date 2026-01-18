@@ -24,4 +24,10 @@ class UserSettingsDataSource(
             )
         }
     }
+
+    suspend fun setLocationDoNotAsk(value: Boolean) {
+        dataStore.updateData { prefs ->
+            prefs.copy(location_permission_do_not_ask = value)
+        }
+    }
 }

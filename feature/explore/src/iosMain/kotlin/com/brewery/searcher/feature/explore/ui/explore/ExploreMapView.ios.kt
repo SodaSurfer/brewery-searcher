@@ -1,4 +1,4 @@
-package com.brewery.searcher.feature.explore.ui
+package com.brewery.searcher.feature.explore.ui.explore
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize

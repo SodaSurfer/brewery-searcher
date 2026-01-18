@@ -26,6 +26,7 @@ import com.brewery.searcher.core.designsystem.component.BreweryListItem
 @Composable
 fun BreweryListBottomSheet(
     breweries: List<Brewery>,
+    favoriteBreweryIds: Set<String>,
     onBreweryClick: (Brewery) -> Unit,
     onDismiss: () -> Unit,
     modifier: Modifier = Modifier,
@@ -61,6 +62,7 @@ fun BreweryListBottomSheet(
                     BreweryListItem(
                         brewery = brewery,
                         onClick = { onBreweryClick(brewery) },
+                        isFavorite = brewery.id in favoriteBreweryIds,
                     )
                 }
             }

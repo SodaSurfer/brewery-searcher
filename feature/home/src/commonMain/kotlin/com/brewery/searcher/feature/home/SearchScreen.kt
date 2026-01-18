@@ -79,6 +79,7 @@ fun SearchScreen(
     val showBottomSheet by viewModel.showBottomSheet.collectAsState()
     val searchResults = viewModel.searchResults.collectAsLazyPagingItems()
     val searchHistoryState by viewModel.searchHistoryState.collectAsState()
+    val favoriteBreweryIds by viewModel.favoriteBreweryIds.collectAsState()
 
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) {
@@ -131,6 +132,7 @@ fun SearchScreen(
                     searchResults = searchResults,
                     searchQuery = searchQuery,
                     searchHistoryState = searchHistoryState,
+                    favoriteBreweryIds = favoriteBreweryIds,
                     onHistoryItemClick = viewModel::onHistoryItemClick,
                     onDeleteHistoryItem = viewModel::onDeleteHistoryItem,
                     onClearHistory = viewModel::onClearHistory,
@@ -236,6 +238,7 @@ private fun SearchResultsContent(
     searchResults: LazyPagingItems<Brewery>,
     searchQuery: String,
     searchHistoryState: SearchHistoryState,
+    favoriteBreweryIds: Set<String>,
     onHistoryItemClick: (SearchHistory) -> Unit,
     onDeleteHistoryItem: (Long) -> Unit,
     onClearHistory: () -> Unit,
@@ -309,6 +312,7 @@ private fun SearchResultsContent(
         else -> {
             BreweryList(
                 searchResults = searchResults,
+                favoriteBreweryIds = favoriteBreweryIds,
                 onBreweryClick = onBreweryClick,
                 modifier = modifier,
             )
@@ -534,6 +538,7 @@ private fun NoResultsState(
 @Composable
 private fun BreweryList(
     searchResults: LazyPagingItems<Brewery>,
+    favoriteBreweryIds: Set<String>,
     onBreweryClick: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -552,6 +557,7 @@ private fun BreweryList(
                 BreweryListItem(
                     brewery = brewery,
                     onClick = { onBreweryClick(brewery.id) },
+                    isFavorite = brewery.id in favoriteBreweryIds,
                 )
             }
         }

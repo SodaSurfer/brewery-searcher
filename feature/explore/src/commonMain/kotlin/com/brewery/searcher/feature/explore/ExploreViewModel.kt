@@ -3,6 +3,7 @@ package com.brewery.searcher.feature.explore
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.brewery.searcher.core.data.repository.BreweryRepository
+import com.brewery.searcher.core.data.repository.FavoriteBreweryRepository
 import com.brewery.searcher.core.datastore.UserSettingsDataSource
 import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.core.network.api.ApiException
@@ -11,9 +12,12 @@ import com.brewery.searcher.feature.explore.model.VisibleBounds
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -32,6 +36,7 @@ data class ExploreUiState(
 class ExploreViewModel(
     private val breweryRepository: BreweryRepository,
     private val userSettingsDataSource: UserSettingsDataSource,
+    favoriteBreweryRepository: FavoriteBreweryRepository,
 ) : ViewModel() {
 
     companion object {
@@ -48,6 +53,15 @@ class ExploreViewModel(
 
     private val _uiState = MutableStateFlow(ExploreUiState())
     val uiState: StateFlow<ExploreUiState> = _uiState.asStateFlow()
+
+    val favoriteBreweryIds: StateFlow<Set<String>> = favoriteBreweryRepository
+        .getAllFavorites()
+        .map { breweries -> breweries.map { it.id }.toSet() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptySet()
+        )
 
     init {
         viewModelScope.launch {

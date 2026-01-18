@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.SportsBar
 import androidx.compose.material.icons.rounded.LocationOn
 import androidx.compose.material.icons.rounded.SportsBar
@@ -35,6 +36,7 @@ import com.brewery.searcher.core.model.Brewery
 fun BreweryListItem(
     brewery: Brewery,
     onClick: () -> Unit = {},
+    isFavorite: Boolean = false,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -124,6 +126,15 @@ fun BreweryListItem(
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
+            }
+
+            if (isFavorite) {
+                Icon(
+                    imageVector = Icons.Filled.Favorite,
+                    contentDescription = "Favorite",
+                    tint = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.size(20.dp)
+                )
             }
         }
     }

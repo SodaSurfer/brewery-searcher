@@ -51,6 +51,7 @@ fun ExploreScreen(
     viewModel: ExploreViewModel = koinViewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val favoriteBreweryIds by viewModel.favoriteBreweryIds.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
 
     // moko-permissions controller
@@ -186,6 +187,7 @@ fun ExploreScreen(
     if (uiState.showBottomSheet) {
         BreweryListBottomSheet(
             breweries = uiState.breweries,
+            favoriteBreweryIds = favoriteBreweryIds,
             onBreweryClick = { brewery ->
                 viewModel.onDismissBottomSheet()
                 viewModel.onBrewerySelected(brewery)

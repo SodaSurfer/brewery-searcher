@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.brewery.searcher.core.data.repository.BreweryRepository
+import com.brewery.searcher.core.data.repository.FavoriteBreweryRepository
 import com.brewery.searcher.core.data.repository.SearchHistoryRepository
 import com.brewery.searcher.core.model.Brewery
 import com.brewery.searcher.core.model.SearchHistory
@@ -38,6 +39,7 @@ sealed interface SearchHistoryState {
 class SearchViewModel(
     private val breweryRepository: BreweryRepository,
     private val searchHistoryRepository: SearchHistoryRepository,
+    favoriteBreweryRepository: FavoriteBreweryRepository,
 ) : ViewModel() {
 
     companion object {
@@ -57,6 +59,15 @@ class SearchViewModel(
 
     private val _showBottomSheet = MutableStateFlow(false)
     val showBottomSheet: StateFlow<Boolean> = _showBottomSheet.asStateFlow()
+
+    val favoriteBreweryIds: StateFlow<Set<String>> = favoriteBreweryRepository
+        .getAllFavorites()
+        .map { breweries -> breweries.map { it.id }.toSet() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = emptySet()
+        )
 
     val searchHistoryState: StateFlow<SearchHistoryState> = searchHistoryRepository
         .getRecentSearches()

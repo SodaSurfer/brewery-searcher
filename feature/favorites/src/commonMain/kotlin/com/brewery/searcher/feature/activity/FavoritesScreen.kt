@@ -134,6 +134,7 @@ private fun FavoritesList(
             BreweryListItem(
                 brewery = brewery,
                 onClick = { onBreweryClick(brewery.id) },
+                isFavorite = true,
             )
         }
     }
